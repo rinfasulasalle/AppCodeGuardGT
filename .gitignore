@@ -1,0 +1,60 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+*.env
+
+# Pytest
+*.cover
+*.log
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+*.pkl
+*.nib
+*.swp
+
+# mypy
+.mypy_cache/
+
+# Flake8
+.flake8
+
+# pyenv
+.python-version
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Flask specific
+instance/
+*.db
+*.sqlite3
+
+# Other
+*.log
+*.pot
+*.mo
+*.tmp
+*.bak
+*.swp
