@@ -1,5 +1,4 @@
 from flask import Flask
-from routes.principio import principios
 from routes.usuarios import usuarios
 from routes.estudiantes import estudiantes
 from routes.docentes import docentes
@@ -27,7 +26,6 @@ def create_app():
     db.init_app(app)
 
     # Registra los Blueprints
-    app.register_blueprint(principios)
     app.register_blueprint(usuarios, url_prefix='/usuarios')
     app.register_blueprint(estudiantes, url_prefix='/estudiantes')
     app.register_blueprint(docentes, url_prefix='/docentes')
