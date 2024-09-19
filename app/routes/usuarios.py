@@ -2,9 +2,6 @@ from flask import Blueprint, jsonify, request
 from models.usuario import Usuario
 from utils.db import db
 from utils.error_handler import handle_errors
-import pytz
-
-PERU_TZ = pytz.timezone('America/Lima')
 
 usuarios = Blueprint('usuarios', __name__)
 
@@ -18,12 +15,11 @@ def get_all():
         'dni': usuario.dni,
         'nombres': usuario.nombres,
         'apellidos': usuario.apellidos,
-        'correo': usuario.correo,
-        'fecha_nacimiento': str(usuario.fecha_nacimiento)
+        'correo': usuario.correo
     } for usuario in usuarios]
     return jsonify(usuarios_list), 200
 
-@usuarios.route("get_by_dni/<dni>", methods=['GET'])
+@usuarios.route("/get_by_dni/<dni>", methods=['GET'])
 @handle_errors
 def get_by_dni(dni):
     usuario = Usuario.query.filter_by(dni=dni).first()
@@ -32,8 +28,7 @@ def get_by_dni(dni):
             'dni': usuario.dni,
             'nombres': usuario.nombres,
             'apellidos': usuario.apellidos,
-            'correo': usuario.correo,
-            'fecha_nacimiento': str(usuario.fecha_nacimiento)
+            'correo': usuario.correo
         }
         return jsonify(usuario_data), 200
     else:
@@ -43,7 +38,7 @@ def get_by_dni(dni):
 @handle_errors
 def create():
     data = request.get_json()
-    required_fields = ['dni', 'nombres', 'apellidos', 'fecha_nacimiento']
+    required_fields = ['dni', 'nombres', 'apellidos']
     missing_fields = [field for field in required_fields if field not in data or not data[field]]
 
     if missing_fields:
@@ -75,8 +70,6 @@ def create():
     if len(apellidos) < 2:
         return jsonify({'error': 'Se necesitan al menos dos apellidos para generar el correo'}), 400
 
-    fecha_nacimiento = data['fecha_nacimiento']
-    
     # Generar correo automáticamente
     correo = f"{nombres[0].lower()}{apellidos[0].lower()}{apellidos[1][0].lower()}@codeguard.pe"
 
@@ -89,7 +82,6 @@ def create():
         nombres=nombres,
         apellidos=" ".join(apellidos),
         correo=correo,
-        fecha_nacimiento=fecha_nacimiento,
         contrasena=contrasena
     )
 
@@ -133,7 +125,7 @@ def update(dni):
             return jsonify({'error': 'El DNI ya está registrado'}), 409  # Error 409: Conflicto
 
     # Validar que los campos no estén vacíos
-    for field in ['nombres', 'apellidos', 'correo', 'fecha_nacimiento']:
+    for field in ['nombres', 'apellidos', 'correo']:
         if field in data and not data[field]:
             return jsonify({'error': f'El campo {field} no puede estar vacío'}), 400
 
@@ -144,11 +136,7 @@ def update(dni):
         usuario.apellidos = data['apellidos']
     if 'correo' in data:
         usuario.correo = data['correo']
-    if 'fecha_nacimiento' in data:
-        usuario.fecha_nacimiento = data['fecha_nacimiento']
-    if 'contrasena' in data:
-        usuario.contrasena = data['contrasena']
-
+    
     # Actualizar el DNI si se proporciona un nuevo DNI
     if nuevo_dni:
         usuario.dni = nuevo_dni
