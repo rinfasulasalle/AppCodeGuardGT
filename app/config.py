@@ -6,10 +6,8 @@ from routes.docentes import docentes
 from routes.evaluaciones import evaluaciones
 from routes.incidencias import incidencias
 from routes.documentos import documentos
-'''
 from routes.plagios import plagios
 from routes.notas_evaluaciones import notas_evaluaciones
-'''
 from utils.db import db
 import os
 from dotenv import load_dotenv
@@ -35,10 +33,7 @@ def create_app():
     app.register_blueprint(evaluaciones, url_prefix='/evaluaciones')
     app.register_blueprint(incidencias, url_prefix='/incidencias')
     app.register_blueprint(documentos, url_prefix='/documentos')
-    '''
-    app.register_blueprint(administracion, url_prefix='/administracion')
     app.register_blueprint(plagios, url_prefix='/plagios')
     app.register_blueprint(notas_evaluaciones, url_prefix='/notas_evaluaciones')
-    '''
 
     return app

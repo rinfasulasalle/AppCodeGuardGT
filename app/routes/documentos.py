@@ -98,6 +98,5 @@ def get_by_estudiante(dni_estudiante):
     documentos_list = [doc.to_dict() for doc in documentos]
 
     return jsonify({
-        'dni_estudiante': dni_estudiante,
         'documentos': documentos_list
     }), 200
