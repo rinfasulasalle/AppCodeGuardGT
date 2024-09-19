@@ -5,16 +5,19 @@ class Evaluacion(db.Model):
     nombre = db.Column(db.String(100), nullable=False, unique=True)
     descripcion = db.Column(db.Text)
     duracion = db.Column(db.Integer, nullable=False)  # Duración en segundos
-    
-    def __init__(self, nombre, duracion, descripcion=None):
+    dni_docente = db.Column(db.String(20), db.ForeignKey('docente.dni_usuario', ondelete='CASCADE'))
+
+    def __init__(self, nombre, descripcion, duracion, dni_docente):
         self.nombre = nombre
-        self.duracion = duracion
         self.descripcion = descripcion
+        self.duracion = duracion
+        self.dni_docente = dni_docente
     
     def to_dict(self):
         return {
             'id_evaluacion': self.id_evaluacion,
             'nombre': self.nombre,
             'descripcion': self.descripcion,
-            'duracion': self.duracion
+            'duracion': self.duracion,
+            'dni_docente': self.dni_docente
         }
