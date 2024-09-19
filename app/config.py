@@ -1,13 +1,15 @@
 from flask import Flask
 from routes.usuarios import usuarios
 from routes.estudiantes import estudiantes
+from routes.administradores import administradores
+'''
 from routes.docentes import docentes
-from routes.adminstracions import administracion
 from routes.incidencias import incidencias
 from routes.documentos import documentos
 from routes.plagios import plagios
 from routes.evaluaciones import evaluaciones
 from routes.notas_evaluaciones import notas_evaluaciones
+'''
 from utils.db import db
 import os
 from dotenv import load_dotenv
@@ -28,6 +30,8 @@ def create_app():
     # Registra los Blueprints
     app.register_blueprint(usuarios, url_prefix='/usuarios')
     app.register_blueprint(estudiantes, url_prefix='/estudiantes')
+    app.register_blueprint(administradores, url_prefix='/administradores')
+    '''
     app.register_blueprint(docentes, url_prefix='/docentes')
     app.register_blueprint(administracion, url_prefix='/administracion')
     app.register_blueprint(incidencias, url_prefix='/incidencias')
@@ -35,5 +39,6 @@ def create_app():
     app.register_blueprint(plagios, url_prefix='/plagios')
     app.register_blueprint(evaluaciones, url_prefix='/evaluaciones')
     app.register_blueprint(notas_evaluaciones, url_prefix='/notas_evaluaciones')
+    '''
 
     return app
