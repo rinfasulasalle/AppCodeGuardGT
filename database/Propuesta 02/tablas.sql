@@ -2,14 +2,12 @@
 CREATE DATABASE db_codeguard;
 USE db_codeguard;
 
-
 -- Tabla principal de Usuarios
 CREATE TABLE Usuarios (
     dni VARCHAR(20) PRIMARY KEY,
     nombres VARCHAR(100) NOT NULL,
     apellidos VARCHAR(100) NOT NULL,
     correo VARCHAR(100) UNIQUE NOT NULL,
-    fecha_nacimiento DATE NOT NULL,
     contrasena VARCHAR(255) NOT NULL,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -66,7 +64,6 @@ CREATE TABLE Plagios (
 CREATE TABLE Incidencias (
     id_incidencia INT AUTO_INCREMENT PRIMARY KEY,
     dni_estudiante VARCHAR(20),
-    fecha_incidencia TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     descripcion TEXT NOT NULL,
     FOREIGN KEY (dni_estudiante) REFERENCES Estudiantes(dni_usuario) ON DELETE CASCADE
 );
