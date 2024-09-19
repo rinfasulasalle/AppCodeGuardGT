@@ -2,8 +2,8 @@ from flask import Flask
 from routes.usuarios import usuarios
 from routes.estudiantes import estudiantes
 from routes.administradores import administradores
-'''
 from routes.docentes import docentes
+'''
 from routes.incidencias import incidencias
 from routes.documentos import documentos
 from routes.plagios import plagios
@@ -31,8 +31,8 @@ def create_app():
     app.register_blueprint(usuarios, url_prefix='/usuarios')
     app.register_blueprint(estudiantes, url_prefix='/estudiantes')
     app.register_blueprint(administradores, url_prefix='/administradores')
-    '''
     app.register_blueprint(docentes, url_prefix='/docentes')
+    '''
     app.register_blueprint(administracion, url_prefix='/administracion')
     app.register_blueprint(incidencias, url_prefix='/incidencias')
     app.register_blueprint(documentos, url_prefix='/documentos')
