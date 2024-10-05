@@ -5,19 +5,19 @@ from utils.db import db
 from utils.error_handler import handle_errors
 import re
 
-estudiantes = Blueprint('estudiante', __name__)
+estudiante = Blueprint('estudiante', __name__)
 
 # --------------------------------------------------------
 # Rutas para manejo de datos de estudiantes
 
-@estudiantes.route("/get_all", methods=['GET'])
+@estudiante.route("/get_all", methods=['GET'])
 @handle_errors
 def get_all():
     estudiantes = Estudiante.query.all()
     estudiantes_list = [estudiante.to_dict() for estudiante in estudiantes]
     return jsonify(estudiantes_list), 200
 
-@estudiantes.route("/get_by_dni_usuario/<dni_usuario>", methods=['GET'])
+@estudiante.route("/get_by_dni_usuario/<dni_usuario>", methods=['GET'])
 @handle_errors
 def get_by_dni_usuario(dni_usuario):
     if not dni_usuario or not isinstance(dni_usuario, str):
@@ -29,7 +29,7 @@ def get_by_dni_usuario(dni_usuario):
     else:
         return jsonify({'error': 'Estudiante no encontrado'}), 404
 
-@estudiantes.route("/create", methods=['POST'])
+@estudiante.route("/create", methods=['POST'])
 @handle_errors
 def create():
     data = request.get_json()
@@ -63,7 +63,7 @@ def create():
 
     return jsonify({'message': 'Estudiante agregado exitosamente', 'dni_usuario': nuevo_estudiante.dni_usuario}), 201
 
-@estudiantes.route("/delete/<dni_usuario>", methods=['DELETE'])
+@estudiante.route("/delete/<dni_usuario>", methods=['DELETE'])
 @handle_errors
 def delete(dni_usuario):
     if not dni_usuario or not isinstance(dni_usuario, str):
