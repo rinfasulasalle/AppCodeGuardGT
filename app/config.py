@@ -19,4 +19,5 @@ def create_app():
 
     # Registra los Blueprints
     app.register_blueprint(usuarios, url_prefix='/usuarios')
+
     return app

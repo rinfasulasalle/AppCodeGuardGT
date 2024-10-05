@@ -10,11 +10,13 @@ class Usuario(db.Model):
     apellidos = db.Column(db.String(100), nullable=False)
     correo = db.Column(db.String(100), unique=True, nullable=False)
     contrasena = db.Column(db.String(255), nullable=False)
+    telefono = db.Column(db.String(15), unique=False, nullable=False)
     fecha_registro = db.Column(db.TIMESTAMP, default=lambda: datetime.now(PERU_TZ))
 
-    def __init__(self, dni, nombres, apellidos, correo, contrasena):
+    def __init__(self, dni, nombres, apellidos, correo, contrasena, telefono):
         self.dni = dni
         self.nombres = nombres
         self.apellidos = apellidos
         self.correo = correo
         self.contrasena = contrasena
+        self.telefono = telefono
