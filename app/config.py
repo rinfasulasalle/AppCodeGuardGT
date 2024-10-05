@@ -1,8 +1,10 @@
 from flask import Flask
-from routes.r_usuarios import usuarios
 from utils.db import db
 import os
 from dotenv import load_dotenv
+
+from routes.r_usuarios import usuarios
+from routes.r_administracion import administracion
 
 def create_app():
     app = Flask(__name__)
@@ -19,5 +21,6 @@ def create_app():
 
     # Registra los Blueprints
     app.register_blueprint(usuarios, url_prefix='/usuarios')
+    app.register_blueprint(administracion, url_prefix='/administracion')
 
     return app
