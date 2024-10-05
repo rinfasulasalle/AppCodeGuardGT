@@ -1,5 +1,5 @@
 from flask import Flask
-from routes.usuarios import usuarios
+from routes.r_usuarios import usuarios
 from utils.db import db
 import os
 from dotenv import load_dotenv
