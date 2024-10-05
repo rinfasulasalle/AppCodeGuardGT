@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from routes.r_usuarios import usuarios
 from routes.r_administracion import administracion
 from routes.r_docente import docente
+from routes.r_estudiante import estudiante
 
 def create_app():
     app = Flask(__name__)
@@ -24,5 +25,6 @@ def create_app():
     app.register_blueprint(usuarios, url_prefix='/usuarios')
     app.register_blueprint(administracion, url_prefix='/administracion')
     app.register_blueprint(docente, url_prefix='/docente')
+    app.register_blueprint(estudiante, url_prefix='/estudiante')
 
     return app
