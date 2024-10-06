@@ -8,6 +8,7 @@ from routes.r_administracion import administracion
 from routes.r_docente import docente
 from routes.r_estudiante import  estudiante
 from routes.r_curso import curso
+from routes.r_evaluacion import evaluacion
 
 def create_app():
     app = Flask(__name__)
@@ -28,4 +29,5 @@ def create_app():
     app.register_blueprint(docente, url_prefix='/docente')
     app.register_blueprint(estudiante, url_prefix='/estudiante')
     app.register_blueprint(curso, url_prefix='/curso')
+    app.register_blueprint(evaluacion, url_prefix='/evaluacion')
     return app
