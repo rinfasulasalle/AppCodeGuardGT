@@ -28,5 +28,4 @@ def create_app():
     app.register_blueprint(docente, url_prefix='/docente')
     app.register_blueprint(estudiante, url_prefix='/estudiante')
     app.register_blueprint(curso, url_prefix='/curso')
-
     return app
