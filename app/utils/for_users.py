@@ -6,7 +6,7 @@ import re
 # Función para validar el número de teléfono
 def validar_telefono(telefono):
     # Ejemplo de patrón: +51 123456789
-    patron = re.compile(r'^\+\d{1,3} \d{7,15}$')  # Código de país y número
+    patron = re.compile(r'^\+\d{1,3}\s*\d{1,3}[\s\d]*$')  # Código de país y número, permite espacios
     return bool(patron.match(telefono))
 
 # Función para normalizar nombres (eliminar tildes y caracteres especiales)

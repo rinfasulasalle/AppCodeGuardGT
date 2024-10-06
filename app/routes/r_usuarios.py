@@ -76,7 +76,6 @@ def create():
     telefono = data['telefono'].replace(" ", "")
     if not validar_telefono(telefono):
         return jsonify({'error': 'El formato del número de teléfono es inválido. Debe ser: +código_de_país número.'}), 400
-
     # Limpiar el número de teléfono (eliminar espacios)
     telefono_limpio = telefono.replace(" ", "")
 
