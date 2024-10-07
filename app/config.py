@@ -11,7 +11,7 @@ from routes.r_curso import curso
 from routes.r_evaluacion import evaluacion
 from routes.r_matricula import matricula
 from routes.r_codigo import codigo
-
+from routes.r_resultado import resultado
 def create_app():
     app = Flask(__name__)
     
@@ -34,4 +34,5 @@ def create_app():
     app.register_blueprint(evaluacion, url_prefix='/evaluacion')
     app.register_blueprint(matricula, url_prefix='/matricula')
     app.register_blueprint(codigo, url_prefix='/codigo')
+    app.register_blueprint(resultado, url_prefix='/resultado')
     return app
