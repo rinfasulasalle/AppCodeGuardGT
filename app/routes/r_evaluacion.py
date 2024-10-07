@@ -39,6 +39,7 @@ def create_evaluacion():
 
     id_curso = data.get('id_curso')
     nombre = data.get('nombre')
+    descripcion = data.get('descripcion')
 
     # Validar curso
     if not id_curso or not isinstance(id_curso, int):
@@ -58,7 +59,7 @@ def create_evaluacion():
         return jsonify({'error': 'Ya existe una evaluación con ese nombre'}), 409
 
     # Crear nueva evaluación
-    nueva_evaluacion = Evaluacion(id_curso=id_curso, nombre=nombre)
+    nueva_evaluacion = Evaluacion(id_curso=id_curso, nombre=nombre,descripcion= descripcion)
     db.session.add(nueva_evaluacion)
     db.session.commit()
 
@@ -91,6 +92,7 @@ def update_evaluacion(id_evaluacion):
 
     id_curso = data.get('id_curso')
     nombre = data.get('nombre')
+    descripcion = data.get('descripcion')
 
     # Validar curso
     if id_curso and not Curso.query.filter_by(id_curso=id_curso).first():
@@ -108,6 +110,8 @@ def update_evaluacion(id_evaluacion):
         if Evaluacion.query.filter(Evaluacion.nombre == nombre, Evaluacion.id_evaluacion != id_evaluacion).first():
             return jsonify({'error': 'El nombre de la evaluación ya existe'}), 409
         evaluacion.nombre = nombre
+    if descripcion:
+        evaluacion.descripcion = descripcion
 
     db.session.commit()
 
