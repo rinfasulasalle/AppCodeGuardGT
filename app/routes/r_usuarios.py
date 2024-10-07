@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from utils.apis_net_pe import ApisNetPe
 from models.usuario import Usuario
 from utils.db import db
 from utils.for_users import validar_telefono,generar_correo_unico, hash_contrasena, verificar_contrasena
@@ -6,7 +7,8 @@ from utils.error_handler import handle_errors
 import re
 
 usuarios = Blueprint('usuarios', __name__)
-
+# Crear instancia de ApisNetPe
+api_client = ApisNetPe()
 # --------------------------------------------------------
 # Rutas para manejo de datos
 @usuarios.route("/get_all", methods=['GET'])
@@ -42,7 +44,7 @@ def get_by_dni(dni):
 @handle_errors
 def create():
     data = request.get_json()
-    required_fields = ['dni', 'nombres', 'apellidos', 'telefono']
+    required_fields = ['dni', 'telefono']
     missing_fields = [field for field in required_fields if field not in data or not data[field]]
 
     if missing_fields:
@@ -58,51 +60,61 @@ def create():
     if Usuario.query.filter_by(dni=dni).first():
         return jsonify({'error': 'El DNI ya está registrado'}), 409  # Conflicto
 
-    nombres = data['nombres']
-    apellidos = data['apellidos']
-    
-    # Validar que hay al menos dos apellidos
-    if len(apellidos.split()) < 2:
-        return jsonify({'error': 'Se necesitan al menos dos apellidos para generar el correo'}), 400
-
-    # Validar que nombres y apellidos solo contengan letras
-    if not re.match(r'^[A-Za-záéíóúñÑÁÉÍÓÚ ]+$', nombres):
-        return jsonify({'error': 'Los nombres solo pueden contener letras y espacios.'}), 400
-    
-    if not re.match(r'^[A-Za-záéíóúñÑÁÉÍÓÚ ]+$', apellidos):
-        return jsonify({'error': 'Los apellidos solo pueden contener letras y espacios.'}), 400
-
     # Validar el formato del número de teléfono
     telefono = data['telefono'].replace(" ", "")
     if not validar_telefono(telefono):
         return jsonify({'error': 'El formato del número de teléfono es inválido. Debe ser: +código_de_país número.'}), 400
+    
     # Limpiar el número de teléfono (eliminar espacios)
     telefono_limpio = telefono.replace(" ", "")
+    
+    # Obtener información de la persona usando el DNI
+    person_info = api_client.get_person(dni)
+
+    # Comprobar si se obtuvo una respuesta válida
+    if not person_info:
+        return jsonify({'error': 'No se pudo obtener información del DNI proporcionado'}), 404
+
+    # Verificar que los campos esperados existen en la respuesta
+    if not all(k in person_info for k in ('nombres', 'apellidoPaterno', 'apellidoMaterno')):
+        return jsonify({'error': 'Faltan campos en la respuesta del API para generar los datos'}), 400
+
+    # Extraer nombres y apellidos de la respuesta
+    nombres = person_info['nombres']
+    apellido_paterno = person_info['apellidoPaterno']
+    apellido_materno = person_info['apellidoMaterno']
+
+    # Concatenar nombres y apellidos
+    apellidos_completos = f"{apellido_paterno} {apellido_materno}".strip()
 
     # Generar correo único automáticamente
-    correo = generar_correo_unico(nombres, apellidos)
+    correo = generar_correo_unico(nombres, apellidos_completos)
 
-    # Hashear la contraseña
-    contrasena = data.get('contrasena', dni)  # Usa el DNI como contraseña por defecto si no se proporciona
+    # Hashear la contraseña (en este caso, usar el DNI como contraseña por defecto)
+    contrasena = dni
     contrasena_hash = hash_contrasena(contrasena)
 
     # Crear el nuevo usuario
     nuevo_user = Usuario(
         dni=dni,
         nombres=nombres,
-        apellidos=apellidos,
+        apellidos=apellidos_completos,
         correo=correo,
         contrasena=contrasena_hash,
-        telefono=telefono_limpio  # Usar el número limpio
+        telefono=telefono_limpio
     )
 
+    # Agregar el nuevo usuario a la base de datos
     db.session.add(nuevo_user)
     db.session.commit()
 
+    # Retornar la respuesta de éxito
     return jsonify({
         'message': 'Usuario agregado exitosamente',
         'usuario': {
             'dni': nuevo_user.dni,
+            'nombres': nuevo_user.nombres,
+            'apellidos': nuevo_user.apellidos,
             'correo': nuevo_user.correo
         }
     }), 201
@@ -178,9 +190,9 @@ def change_password(dni):
     if not old_password or not new_password:
         return jsonify({'error': 'La contraseña antigua y la nueva son requeridas'}), 400
 
-    # Verificar si la contraseña actual es correcta
+    # Verificar si la contraseña antigua es correcta
     if not verificar_contrasena(old_password, usuario.contrasena):
-        return jsonify({'error': 'La contraseña actual no es correcta'}), 400
+        return jsonify({'error': 'La contraseña antigua no es correcta'}), 400
 
     # Hashear la nueva contraseña
     nueva_contrasena_hash = hash_contrasena(new_password)
