@@ -7,10 +7,15 @@
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- icheck bootstrap -->
   <link rel="stylesheet" href="/static/assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Bootstrap 5 -->
   <link rel="stylesheet" href="/static/assets/css/bootstrap.min.css">
+  <!-- Theme style -->
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
 {% endblock stylesheets %}
 
@@ -21,10 +26,17 @@
         <a target="_blank" rel="noopener noreferrer" 
            href="#"><b>CodeGuard</b>GT</a>
     </div>
+    <!-- /.login-logo -->
     <div class="card">
       <div class="card-body login-card-body">
         <p class="login-box-msg">
-          Ingresa tus credenciales
+          {% with message = get_flashed_messages(with_categories=true) %}
+            {% if message %}
+              <span class="text-danger">{{ message[0][1] }}</span>
+            {% else %}
+                Ingresa tus credenciales
+            {% endif %}
+          {% endwith %}
         </p>
 
         <form method="POST" action="">
@@ -53,41 +65,26 @@
                 </label>
               </div>
             </div>
+            <!-- /.col -->
             <div class="col-4">
               <button type="submit" class="btn btn-primary btn-block">Entrar</button>
             </div>
+            <!-- /.col -->
           </div>
         </form>
 
-        <!-- Toast for messages -->
-        <div id="loginToast" class="toast" style="position: fixed; bottom: 20px; right: 20px; z-index: 1050;" data-delay="5000">
-          <div class="toast-header bg-danger text-white">
-            <strong class="me-auto">Error</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-          </div>
-          <div class="toast-body">
-            <span id="toastMessage"></span>
-          </div>
-        </div>
+        <br /><br />
 
       </div>
+      <!-- /.login-card-body -->
     </div>
   </div>
 {% endblock content %}
 
-
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
+  <!-- jQuery -->
   <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 5 -->
   <script src="/static/assets/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Mostrar el toast si hay un mensaje flash
-    document.addEventListener("DOMContentLoaded", function() {
-      const toastElement = document.getElementById('flashToast');
-      if (toastElement.classList.contains('hide') === false) {
-        const toast = new bootstrap.Toast(toastElement);
-        toast.show();
-      }
-    });
-  </script>
 {% endblock javascripts %}
