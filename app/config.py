@@ -12,6 +12,7 @@ from routes.r_evaluacion import evaluacion
 from routes.r_matricula import matricula
 from routes.r_codigo import codigo
 from routes.r_resultado import resultado
+
 def create_app():
     app = Flask(__name__)
     
@@ -21,6 +22,7 @@ def create_app():
     # Configuraciones de la aplicación
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
     # Inicializa la base de datos con la aplicación
     db.init_app(app)
@@ -35,4 +37,5 @@ def create_app():
     app.register_blueprint(matricula, url_prefix='/matricula')
     app.register_blueprint(codigo, url_prefix='/codigo')
     app.register_blueprint(resultado, url_prefix='/resultado')
+    
     return app
