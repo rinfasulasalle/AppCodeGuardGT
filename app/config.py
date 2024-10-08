@@ -1,4 +1,9 @@
 from flask import Flask
+from flask_login import LoginManager
+from models.usuario import Usuario
+from models.administracion import Administracion
+from models.docente import Docente
+from models.estudiante import Estudiante
 from utils.db import db
 import os
 from dotenv import load_dotenv
@@ -12,6 +17,8 @@ from routes.r_evaluacion import evaluacion
 from routes.r_matricula import matricula
 from routes.r_codigo import codigo
 from routes.r_resultado import resultado
+from routes.r_auth import auth
+from routes.r_home import home
 
 def create_app():
     app = Flask(__name__)
@@ -27,6 +34,33 @@ def create_app():
     # Inicializa la base de datos con la aplicación
     db.init_app(app)
 
+    # Inicializamos el LoginManager
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = "Por favor, inicia sesión para acceder a esta página."
+    # Cargar el usuario
+    @login_manager.user_loader
+    def load_user(dni):
+        user = db.session.get(Usuario, str(dni))  # Cargar el usuario por dni
+        if user:
+            # Consultar el rol del usuario
+            role = None
+
+            # Verificar si es Docente
+            if db.session.query(Docente).filter_by(dni_usuario=dni).first():
+                role = 'Docente'
+            # Verificar si es Estudiante
+            elif db.session.query(Estudiante).filter_by(dni_usuario=dni).first():
+                role = 'Estudiante'
+            # Verificar si es Administrador
+            elif db.session.query(Administracion).filter_by(dni_usuario=dni).first():
+                role = 'Administracion'
+
+            # Si se encontró un rol, asignarlo a una propiedad del usuario
+            user.role = role
+        return user
+
     # Registra los Blueprints
     app.register_blueprint(usuarios, url_prefix='/usuarios')
     app.register_blueprint(administracion, url_prefix='/administracion')
@@ -37,5 +71,7 @@ def create_app():
     app.register_blueprint(matricula, url_prefix='/matricula')
     app.register_blueprint(codigo, url_prefix='/codigo')
     app.register_blueprint(resultado, url_prefix='/resultado')
+    app.register_blueprint(auth, url_prefix='/auth')
+    app.register_blueprint(home, url_prefix = '/')
     
     return app
