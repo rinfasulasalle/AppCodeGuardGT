@@ -66,15 +66,15 @@
         </a>
         <ul class="nav nav-treeview">
           <li class="nav-item">
-            <a href="/index.html" class="nav-link {% if 'index.html' in segment %} active {% endif %}">
+            <a href="{{ url_for('home.get_gestion_usuarios') }}" class="nav-link {% if 'index2.html' in segment %} active {% endif %}">
               <i class="far fa-circle nav-icon"></i>
-              <p>Gestión de Roles</p>
+              <p>Gestión de Usuarios</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="/index2.html" class="nav-link {% if 'index2.html' in segment %} active {% endif %}">
+            <a href="/index.html" class="nav-link {% if 'index.html' in segment %} active {% endif %}">
               <i class="far fa-circle nav-icon"></i>
-              <p>Gestión de Usuarios</p>
+              <p>Gestión de Roles</p>
             </a>
           </li>
         </ul>

@@ -21,6 +21,7 @@ def get_all():
         'apellidos': usuario.apellidos,
         'correo': usuario.correo,
         'telefono': usuario.telefono,
+        'fecha_registro': usuario.fecha_registro
     } for usuario in usuarios]
     return jsonify(usuarios_list), 200
 
@@ -34,7 +35,8 @@ def get_by_dni(dni):
             'nombres': usuario.nombres,
             'apellidos': usuario.apellidos,
             'correo': usuario.correo,
-            'telefono': usuario.telefono
+            'telefono': usuario.telefono,
+            'fecha_registro': usuario.fecha_registro
         }
         return jsonify(usuario_data), 200
     else:
