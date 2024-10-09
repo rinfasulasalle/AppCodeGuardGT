@@ -16,7 +16,4 @@ $(document).ready(function() {
 
     // Llama a la función para actualizar los contadores al cargar la página
     actualizarContadores();
-
-    // También puedes hacer que se actualicen automáticamente cada cierto tiempo
-    setInterval(actualizarContadores, 5000); // Actualiza cada 60 segundos
   });

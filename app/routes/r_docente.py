@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
-from models.docente import Docente
+from models.estudiante import Estudiante
 from models.usuario import Usuario
+from models.administracion import Administracion
+from models.docente import Docente
 from utils.db import db
 from utils.error_handler import handle_errors
 import re
@@ -78,6 +80,10 @@ def create():
     # Verificar si el docente ya existe
     if Docente.query.filter_by(dni_usuario=dni_usuario).first():
         return jsonify({'error': 'El docente ya existe'}), 409
+    
+    # Verifica si existe un Administrador o Estudiante con ese dni
+    if Administracion.query.filter_by(dni_usuario= dni_usuario).first() or Estudiante.query.filter_by(dni_usuario= dni_usuario).first():
+        return jsonify({'error': 'Este usuario  ya existe con otro rol.'}), 409
 
     # Crear el nuevo docente
     nuevo_docente = Docente(dni_usuario=dni_usuario)
