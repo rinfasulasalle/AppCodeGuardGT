@@ -14,3 +14,8 @@ def get_home():
         return render_template('home/estudiante/index.html')
     else:
         return render_template('home/index.html')
+    
+@home.route('/profile')
+@login_required
+def get_profile():
+    return render_template('home/profile.html')
