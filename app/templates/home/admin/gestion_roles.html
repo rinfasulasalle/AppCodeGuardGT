@@ -115,11 +115,39 @@
             </section>
           </div>
         <!-- /.row (main row) -->
+         <!-- Formulario para gestión de roles -->
+         <div class="row mt-4">
+          <div class="col-lg-7 connectedSortable">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Gestionar Roles de Usuario</h3>
+              </div>
+              <div class="card-body">
+                <form id="rolForm">
+                  <div class="form-group">
+                    <label for="dniInput">DNI del Usuario</label>
+                    <input type="text" id="dniInput" class="form-control" placeholder="Ingrese el DNI" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="rolSelect">Seleccionar Rol</label>
+                    <select id="rolSelect" class="form-control" required>
+                      <option value="Administracion">Administración</option>
+                      <option value="Docente">Docente</option>
+                      <option value="Estudiante">Estudiante</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Confirmar Rol</button>
+                </form>
+                <div id="responseMessage" style="display: none; margin-top: 10px; padding: 10px; border-radius: 5px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
         </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
-
   </div>
+  
 
 {% endblock content %}
 
@@ -196,5 +224,57 @@
       fetchData("{{ url_for('docente.get_all') }}", "docentes-card-body");
       fetchData("{{ url_for('estudiante.get_all') }}", "estudiantes-card-body");
     };
+  </script>
+  <!-- Nuevo script para gestionar el formulario -->
+  <script>
+  document.getElementById("rolForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    
+    const dni = document.getElementById("dniInput").value;
+    const rol = document.getElementById("rolSelect").value;
+    const responseMessage = document.getElementById("responseMessage");
+
+    // Limpiar el mensaje previo
+    responseMessage.style.display = 'none';
+    responseMessage.textContent = '';
+
+    let url;
+    
+    // Seleccionar URL basado en el rol
+    if (rol === "Administracion") {
+      url = "{{ url_for('administracion.create') }}";  // Ruta para Administración
+    } else if (rol === "Docente") {
+      url = "{{ url_for('docente.create') }}";  // Ruta para Docente
+    } else if (rol === "Estudiante") {
+      url = "{{ url_for('estudiante.create') }}";  // Ruta para Estudiante
+    }
+
+    // Realizar la solicitud POST
+    $.ajax({
+      url: url,
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ dni_usuario: dni }),
+      success: function(response) {
+        // Mostrar mensaje de éxito
+        responseMessage.style.display = 'block';
+        responseMessage.style.backgroundColor = 'green';
+        responseMessage.style.color = 'white';
+        responseMessage.textContent = response.message;
+      },
+      error: function(xhr) {
+        // Mostrar mensaje de error
+        responseMessage.style.display = 'block';
+        responseMessage.style.backgroundColor = 'red';
+        responseMessage.style.color = 'white';
+
+        if (xhr.responseJSON && xhr.responseJSON.error) {
+          responseMessage.textContent = xhr.responseJSON.error;
+        } else {
+          responseMessage.textContent = 'Error al procesar la solicitud.';
+        }
+      }
+    });
+  });
   </script>
   {% endblock javascripts %}
