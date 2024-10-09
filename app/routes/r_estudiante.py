@@ -79,3 +79,10 @@ def delete(dni_usuario):
 
     return jsonify({'message': 'Estudiante eliminado exitosamente', 'dni_usuario': dni_usuario}), 200
 # --------------------------------------------------------
+@estudiante.route("/count", methods=['GET'])
+@handle_errors
+def count_users():
+    # Contar la cantidad de usuarios en la base de datos
+    cantidad_usuarios = Estudiante.query.count()
+    
+    return jsonify({'cantidad': cantidad_usuarios}), 200

@@ -72,7 +72,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a href="/index.html" class="nav-link {% if 'index.html' in segment %} active {% endif %}">
+            <a href="{{ url_for('home.get_gestion_roles') }}" class="nav-link {% if 'index.html' in segment %} active {% endif %}">
               <i class="far fa-circle nav-icon"></i>
               <p>Gestión de Roles</p>
             </a>

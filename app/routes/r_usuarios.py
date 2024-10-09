@@ -229,3 +229,11 @@ def change_passs(dni):
     db.session.commit()
 
     return jsonify({'message': 'Contraseña actualizada exitosamente'}), 200
+
+@usuarios.route("/count", methods=['GET'])
+@handle_errors
+def count_users():
+    # Contar la cantidad de usuarios en la base de datos
+    cantidad_usuarios = Usuario.query.count()
+    
+    return jsonify({'cantidad': cantidad_usuarios}), 200

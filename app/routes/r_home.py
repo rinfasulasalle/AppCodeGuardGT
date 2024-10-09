@@ -26,10 +26,15 @@ def admin_change_password():
     if current_user.role == 'Administracion':
         return render_template('home/admin/admin_change_password.html')
 
-
 @home.route('/gestion_usuarios')
 @login_required
 def get_gestion_usuarios():
     if current_user.role == 'Administracion':
         return render_template('home/admin/gestion_usuarios.html')
+    
+@home.route('/gestion_roles')
+@login_required
+def get_gestion_roles():
+    if current_user.role == 'Administracion':
+        return render_template('home/admin/gestion_roles.html')
 
