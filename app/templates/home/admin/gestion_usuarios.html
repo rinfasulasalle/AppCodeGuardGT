@@ -58,10 +58,31 @@
             </table>
           </div>
         </div>
-        <div class="card-footer">
-          Footer
-        </div>
       </div>
+      
+      <!-- Card para registrar usuarios -->
+      <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Registrar Usuario</h3>
+        </div>
+        <div class="card-body">
+            <form id="registerForm">
+                <div class="mb-3">
+                    <label for="dni">DNI:</label>
+                    <input type="text" class="form-control" id="dni" required>
+                </div>
+                <div class="mb-3">
+                    <label for="telefono">Teléfono:</label>
+                    <input type="text" class="form-control" id="telefono" required>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Crear Usuario</button>
+                </div>
+            </form>
+            <div id="registerResponse"></div>
+        </div>
+    </div>
+    
     </section>
   </div>
 
@@ -76,12 +97,9 @@
   
   <script>
     $(document).ready(function() {
-      // Realizar la solicitud GET
+      // Realizar la solicitud GET para cargar usuarios
       $.get('{{ url_for("usuarios.get_all") }}', function(data) {
-        // Limpiar el contenedor de respuesta
-        $('#response-container').empty(); // Limpiar contenido previo
-        
-        // Recorrer los datos y agregar filas a la tabla
+        $('#response-container').empty();
         $.each(data, function(index, user) {
           $('#response-container').append(
             `<tr>
@@ -97,31 +115,96 @@
       }).fail(function() {
         $('#response-container').html('<tr><td colspan="6">Error al cargar los datos.</td></tr>');
       });
+
+      // Lógica para crear un nuevo usuario
+      $('#createUserBtn').click(function() {
+        const dni = $('#dni').val();
+        const telefono = $('#telefono').val();
+
+        // Hacer la petición POST a la ruta de creación
+        $.ajax({
+          url: '{{ url_for("usuarios.create") }}',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ dni: dni, telefono: telefono }),
+          success: function(response) {
+            alert(response.message);
+            // Reiniciar el formulario
+            $('#userForm')[0].reset();
+            $('#userNames').empty();
+            $('#userLastNames').empty();
+            // Actualizar la tabla de usuarios
+            location.reload();
+          },
+          error: function(jqXHR) {
+            alert(jqXHR.responseJSON.error);
+          }
+        });
+      });
     });
 
     function filterTable() {
-      // Obtener el valor del input de búsqueda
       let input = document.getElementById('dniSearch');
       let filter = input.value.toLowerCase();
       let table = document.querySelector('.table');
       let rows = table.getElementsByTagName('tr');
 
-      // Recorrer todas las filas de la tabla
-      for (let i = 1; i < rows.length; i++) { // Iniciar en 1 para omitir el encabezado
+      for (let i = 1; i < rows.length; i++) {
         let cells = rows[i].getElementsByTagName('td');
-        let dniCell = cells[0]; // Primera columna (DNI)
-
-        // Verificar si el DNI coincide con el filtro
+        let dniCell = cells[0];
         if (dniCell) {
           let txtValue = dniCell.textContent || dniCell.innerText;
-          if (txtValue.toLowerCase().indexOf(filter) > -1) {
-            rows[i].style.display = ""; // Mostrar la fila si coincide
-          } else {
-            rows[i].style.display = "none"; // Ocultar la fila si no coincide
-          }
+          rows[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
         }
       }
     }
+
+    function fetchUserInfo() {
+      const dni = $('#dni').val();
+      if (dni) {
+        $.get(`/api/get_person/${dni}`, function(data) {
+          $('#userNames').text(data.nombres);
+          $('#userLastNames').text(`${data.apellidoPaterno} ${data.apellidoMaterno}`);
+        }).fail(function() {
+          $('#userNames').text('No se encontraron nombres.');
+          $('#userLastNames').text('No se encontraron apellidos.');
+        });
+      } else {
+        $('#userNames').empty();
+        $('#userLastNames').empty();
+      }
+    }
   </script>
+  <script>
+$('#registerForm').on('submit', function(event) {
+        event.preventDefault();
+        
+        const dni = $('#dni').val();
+        const telefono = $('#telefono').val();
+
+        // Realizar la solicitud POST
+        $.ajax({
+            url: '{{ url_for("usuarios.create") }}',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ dni: dni, telefono: telefono }),
+            success: function(response) {
+                // Crear un mensaje de éxito que incluya nombres y apellidos
+                $('#registerResponse').html(`
+                    <div class="alert alert-success">
+                        ${response.message}<br>
+                        Usuario creado: ${response.usuario.nombres} ${response.usuario.apellidos}
+                    </div>
+                `);
+                // Limpiar el formulario
+                $('#registerForm')[0].reset();
+            },
+            error: function(xhr) {
+                const error = xhr.responseJSON ? xhr.responseJSON.error : 'Error desconocido';
+                $('#registerResponse').html(`<div class="alert alert-danger">${error}</div>`);
+            }
+        });
+    });
+</script>
 
 {% endblock javascripts %}
