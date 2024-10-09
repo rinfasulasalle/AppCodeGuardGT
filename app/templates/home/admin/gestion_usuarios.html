@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Blank Page {% endblock %} 
+{% block title %} Usuarios {% endblock %} 
 
 {% block body_class %} sidebar-mini pace-primary {% endblock body_class %}
 
@@ -35,6 +35,9 @@
           <h3 class="card-title">Lista de Usuarios</h3>
         </div>
         <div class="card-body">
+          <div class="mb-3">
+            <input type="text" id="dniSearch" class="form-control" placeholder="Buscar por DNI" onkeyup="filterTable()">
+          </div>
           <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
             <table class="table table-bordered table-hover">
               <thead>
@@ -49,7 +52,7 @@
               </thead>
               <tbody id="response-container">
                 <tr>
-                  <td colspan="5">Cargando...</td>
+                  <td colspan="6">Cargando...</td>
                 </tr>
               </tbody>
             </table>
@@ -92,9 +95,33 @@
           );
         });
       }).fail(function() {
-        $('#response-container').html('<tr><td colspan="5">Error al cargar los datos.</td></tr>');
+        $('#response-container').html('<tr><td colspan="6">Error al cargar los datos.</td></tr>');
       });
     });
+
+    function filterTable() {
+      // Obtener el valor del input de búsqueda
+      let input = document.getElementById('dniSearch');
+      let filter = input.value.toLowerCase();
+      let table = document.querySelector('.table');
+      let rows = table.getElementsByTagName('tr');
+
+      // Recorrer todas las filas de la tabla
+      for (let i = 1; i < rows.length; i++) { // Iniciar en 1 para omitir el encabezado
+        let cells = rows[i].getElementsByTagName('td');
+        let dniCell = cells[0]; // Primera columna (DNI)
+
+        // Verificar si el DNI coincide con el filtro
+        if (dniCell) {
+          let txtValue = dniCell.textContent || dniCell.innerText;
+          if (txtValue.toLowerCase().indexOf(filter) > -1) {
+            rows[i].style.display = ""; // Mostrar la fila si coincide
+          } else {
+            rows[i].style.display = "none"; // Ocultar la fila si no coincide
+          }
+        }
+      }
+    }
   </script>
 
 {% endblock javascripts %}
