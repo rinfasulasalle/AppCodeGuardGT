@@ -55,157 +55,67 @@
 
     <!-- Main content -->
     <section class="content">
-      <div class="container-fluid">
-        <!-- Small boxes (Stat box) -->
-        <div class="row">
-            <div class="col-lg-3 col-6">
-              <!-- small box -->
-              <div class="small-box bg-info" id="sin-rol">
-                <div class="inner">
-                  <h3>...</h3>
-                  <p>Total Usuarios</p>
-                </div>
-                <div class="icon">
-                  <i class="fas fa-user-slash"></i> <!-- Icono para Usuarios Sin Rol -->
-                </div>
-                <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
-              </div>
-            </div>
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-              <!-- small box -->
-              <div class="small-box bg-success" id="administracion">
-                <div class="inner">
-                    <h3>...</h3>
-                  <p>Usuarios Administración</p>
-                </div>
-                <div class="icon">
-                  <i class="fas fa-user-cog"></i> <!-- Icono para Usuarios Administración -->
-                </div>
-                <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
-              </div>
-            </div>
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-              <!-- small box -->
-              <div class="small-box bg-warning" id="docente">
-                <div class="inner">
-                  <h3>...</h3>
-                  <p>Usuarios Docente</p>
-                </div>
-                <div class="icon">
-                  <i class="fas fa-chalkboard-teacher"></i> <!-- Icono para Usuarios Docente -->
-                </div>
-                <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
-              </div>
-            </div>
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-              <!-- small box -->
-              <div class="small-box bg-danger" id="estudiante">
-                <div class="inner">
-                  <h3>...</h3>
-                  <p>Usuarios Estudiante</p>
-                </div>
-                <div class="icon">
-                  <i class="fas fa-user-graduate"></i> <!-- Icono para Usuarios Estudiante -->
-                </div>
-                <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
-              </div>
-            </div>
-            <!-- ./col -->
-        </div>          
+        <div class="container-fluid">
+        <!-- Small boxes (Stat box) por el momento vacio -->      
         <!-- /.row -->
         <!-- Main row -->
         <div class="row">
-          <!-- Left col -->
-          <section class="col-lg-7 connectedSortable">
-            <!-- Custom tabs (Charts with tabs) -->
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">
-                  <i class="fas fa-chart-pie mr-1"></i>
-                  Ventas
-                </h3>
-                <div class="card-tools">
-                  <ul class="nav nav-pills ml-auto">
-                    <li class="nav-item">
-                      <a class="nav-link active" href="#revenue-chart" data-toggle="tab">Área</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="#sales-chart" data-toggle="tab">Donut</a>
-                    </li>
-                  </ul>
+            <!-- Card de Usuarios -->
+            <section class="col-lg-7 connectedSortable">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Usuarios</h3>
                 </div>
-              </div><!-- /.card-header -->
-              <div class="card-body">
-                <div class="tab-content p-0">
-                  <!-- Morris chart - Sales -->
-                  <div class="chart tab-pane active" id="revenue-chart"
-                        style="position: relative; height: 300px;">
-                      <canvas id="revenue-chart-canvas" height="300" style="height: 300px;"></canvas>
-                    </div>
-                  <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;">
-                    <canvas id="sales-chart-canvas" height="300" style="height: 300px;"></canvas>
-                  </div>
+                <div class="card-body" id="usuarios-card-body">
+                  <!-- Aquí se llenará con los datos de usuarios -->
+                  <p>Cargando usuarios...</p>
                 </div>
-              </div><!-- /.card-body -->
-            </div>
-            <!-- /.card -->
-          </section>
-          <!-- /.Left col -->
-          <!-- right col (We are only adding the ID to make the widgets sortable) -->
-          <section class="col-lg-5 connectedSortable">
-
-            <!-- Map card -->
-            <div class="card bg-gradient-primary">
-              <div class="card-header border-0">
-                <h3 class="card-title">
-                  <i class="fas fa-map-marker-alt mr-1"></i>
-                  Visitantes
-                </h3>
-                <!-- card tools -->
-                <div class="card-tools">
-                  <button type="button" class="btn btn-primary btn-sm daterange" title="Rango de fechas">
-                    <i class="far fa-calendar-alt"></i>
-                  </button>
-                  <button type="button" class="btn btn-primary btn-sm" data-card-widget="collapse" title="Colapsar">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                </div>
-                <!-- /.card-tools -->
               </div>
-              <div class="card-body">
-                <div id="world-map" style="height: 250px; width: 100%;"></div>
-              </div>
-              <!-- /.card-body -->
-              <div class="card-footer bg-transparent">
-                <div class="row">
-                  <div class="col-4 text-center">
-                    <div id="sparkline-1"></div>
-                    <div class="text-white">Visitantes</div>
-                  </div>
-                  <!-- ./col -->
-                  <div class="col-4 text-center">
-                    <div id="sparkline-2"></div>
-                    <div class="text-white">En línea</div>
-                  </div>
-                  <!-- ./col -->
-                  <div class="col-4 text-center">
-                    <div id="sparkline-3"></div>
-                    <div class="text-white">Ventas</div>
-                  </div>
-                  <!-- ./col -->
+            </section>
+  
+            <!-- Card de Administradores -->
+            <section class="col-lg-5 connectedSortable">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Administradores</h3>
                 </div>
-                <!-- /.row -->
+                <div class="card-body" id="administradores-card-body">
+                  <!-- Aquí se llenará con los datos de administradores -->
+                  <p>Cargando administradores...</p>
+                </div>
               </div>
-            </div>
-            <!-- /.card -->
-          </section>
-          <!-- right col -->
-        </div>
+            </section>
+          </div>
+  
+          <div class="row">
+            <!-- Card de Docentes -->
+            <section class="col-lg-7 connectedSortable">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Docentes</h3>
+                </div>
+                <div class="card-body" id="docentes-card-body">
+                  <!-- Aquí se llenará con los datos de docentes -->
+                  <p>Cargando docentes...</p>
+                </div>
+              </div>
+            </section>
+  
+            <!-- Card de Estudiantes -->
+            <section class="col-lg-5 connectedSortable">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Estudiantes</h3>
+                </div>
+                <div class="card-body" id="estudiantes-card-body">
+                  <!-- Aquí se llenará con los datos de estudiantes -->
+                  <p>Cargando estudiantes...</p>
+                </div>
+              </div>
+            </section>
+          </div>
         <!-- /.row (main row) -->
-      </div><!-- /.container-fluid -->
+        </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
 
@@ -252,4 +162,39 @@
   <script src="/static/assets/js/demo.js"></script>
   <!-- Script de Conteo de Usuarios -->
   <script src="{{ url_for('static', filename='assets/js/gestio_roles.js') }}"></script>
-{% endblock javascripts %}
+  <script>
+    async function fetchData(url, cardBodyId) {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Limpia el cuerpo de la tarjeta
+        const cardBody = document.getElementById(cardBodyId);
+        cardBody.innerHTML = '';
+
+        // Genera el contenido
+        if (data.length > 0) {
+          data.forEach(usuario => {
+            const div = document.createElement('div');
+            div.textContent = `DNI: ${usuario.dni}, Nombres: ${usuario.nombres}, Apellidos: ${usuario.apellidos}`;
+            cardBody.appendChild(div);
+          });
+        } else {
+          cardBody.innerHTML = '<p>No hay datos disponibles.</p>';
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        const cardBody = document.getElementById(cardBodyId);
+        cardBody.innerHTML = '<p>Error al cargar los datos.</p>';
+      }
+    }
+
+    // Llama a los endpoints al cargar la página
+    window.onload = () => {
+      fetchData("{{ url_for('usuarios.get_all') }}", "usuarios-card-body");
+      fetchData("{{ url_for('administracion.get_all') }}", "administradores-card-body");
+      fetchData("{{ url_for('docente.get_all') }}", "docentes-card-body");
+      fetchData("{{ url_for('estudiante.get_all') }}", "estudiantes-card-body");
+    };
+  </script>
+  {% endblock javascripts %}
