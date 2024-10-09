@@ -81,7 +81,7 @@ def delete(dni_usuario):
 # --------------------------------------------------------
 @estudiante.route("/count", methods=['GET'])
 @handle_errors
-def count_users():
+def count():
     # Contar la cantidad de usuarios en la base de datos
     cantidad_usuarios = Estudiante.query.count()
     

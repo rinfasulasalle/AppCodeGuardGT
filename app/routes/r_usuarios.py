@@ -232,7 +232,7 @@ def change_passs(dni):
 
 @usuarios.route("/count", methods=['GET'])
 @handle_errors
-def count_users():
+def count():
     # Contar la cantidad de usuarios en la base de datos
     cantidad_usuarios = Usuario.query.count()
     

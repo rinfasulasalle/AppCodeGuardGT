@@ -60,10 +60,10 @@
         <div class="row">
             <div class="col-lg-3 col-6">
               <!-- small box -->
-              <div class="small-box bg-info">
+              <div class="small-box bg-info" id="sin-rol">
                 <div class="inner">
-                  <h3>150</h3>
-                  <p>Usuarios Sin Rol</p>
+                  <h3>...</h3>
+                  <p>Total Usuarios</p>
                 </div>
                 <div class="icon">
                   <i class="fas fa-user-slash"></i> <!-- Icono para Usuarios Sin Rol -->
@@ -74,9 +74,9 @@
             <!-- ./col -->
             <div class="col-lg-3 col-6">
               <!-- small box -->
-              <div class="small-box bg-success">
+              <div class="small-box bg-success" id="administracion">
                 <div class="inner">
-                  <h3>53<sup style="font-size: 20px">%</sup></h3>
+                    <h3>...</h3>
                   <p>Usuarios Administración</p>
                 </div>
                 <div class="icon">
@@ -88,9 +88,9 @@
             <!-- ./col -->
             <div class="col-lg-3 col-6">
               <!-- small box -->
-              <div class="small-box bg-warning">
+              <div class="small-box bg-warning" id="docente">
                 <div class="inner">
-                  <h3>44</h3>
+                  <h3>...</h3>
                   <p>Usuarios Docente</p>
                 </div>
                 <div class="icon">
@@ -102,9 +102,9 @@
             <!-- ./col -->
             <div class="col-lg-3 col-6">
               <!-- small box -->
-              <div class="small-box bg-danger">
+              <div class="small-box bg-danger" id="estudiante">
                 <div class="inner">
-                  <h3>65</h3>
+                  <h3>...</h3>
                   <p>Usuarios Estudiante</p>
                 </div>
                 <div class="icon">
@@ -250,5 +250,31 @@
   <script src="/static/assets/js/pages/dashboard.js"></script>
   <!-- AdminLTE for demo purposes -->
   <script src="/static/assets/js/demo.js"></script>
+<script>
+    $(document).ready(function() {
+      function actualizarContadores() {
+        $.get('{{ url_for('usuarios.count') }}', function(data) {
+          $('#sin-rol h3').text(data.cantidad);
+        });
 
+        $.get('{{ url_for('administracion.count') }}', function(data) {
+          $('#administracion h3').text(data.cantidad);
+        });
+
+        $.get('{{ url_for('docente.count') }}', function(data) {
+          $('#docente h3').text(data.cantidad);
+        });
+
+        $.get('{{ url_for('estudiante.count') }}', function(data) {
+          $('#estudiante h3').text(data.cantidad);
+        });
+      }
+
+      // Llama a la función para actualizar los contadores al cargar la página
+      actualizarContadores();
+
+      // También puedes hacer que se actualicen automáticamente cada cierto tiempo
+      setInterval(actualizarContadores, 60000); // Actualiza cada 60 segundos
+    });
+</script>
 {% endblock javascripts %}
