@@ -101,10 +101,22 @@
               <p>Gestión de Cursos</p>
             </a>
           </li>
+        </ul>
+      </li>
+
+      <li class="nav-item has-treeview {% if 'evaluaciones' in segment or 'revision-evaluaciones' in segment %} menu-open {% endif %}">
+        <a href="#" class="nav-link {% if 'evaluaciones' in segment or 'revision-evaluaciones' in segment %} active {% endif %}">
+          <i class="nav-icon fas fa-clipboard-list"></i>
+          <p>
+            Gestión Evaluaciones
+            <i class="right fas fa-angle-left"></i>
+          </p>
+        </a>
+        <ul class="nav nav-treeview">
           <li class="nav-item">
             <a href="/evaluaciones.html" class="nav-link {% if 'evaluaciones' in segment %} active {% endif %}">
               <i class="far fa-circle nav-icon"></i>
-              <p>Gestión Evaluaciones</p>
+              <p>Gestión de Evaluaciones</p>
             </a>
           </li>
           <li class="nav-item">
