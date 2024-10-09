@@ -253,20 +253,17 @@
 <script>
     $(document).ready(function() {
       function actualizarContadores() {
-        $.get('{{ url_for('usuarios.count') }}', function(data) {
-          $('#sin-rol h3').text(data.cantidad);
+        $.get('/usuarios/count', function (data) {
+            $('#sin-rol h3').text(data.cantidad);
         });
-
-        $.get('{{ url_for('administracion.count') }}', function(data) {
-          $('#administracion h3').text(data.cantidad);
+        $.get('/administracion/count', function (data) {
+            $('#administracion h3').text(data.cantidad);
         });
-
-        $.get('{{ url_for('docente.count') }}', function(data) {
-          $('#docente h3').text(data.cantidad);
+        $.get('/docente/count', function (data) {
+            $('#docente h3').text(data.cantidad);
         });
-
-        $.get('{{ url_for('estudiante.count') }}', function(data) {
-          $('#estudiante h3').text(data.cantidad);
+        $.get('/estudiante/count', function (data) {
+            $('#estudiante h3').text(data.cantidad);
         });
       }
 
@@ -274,7 +271,7 @@
       actualizarContadores();
 
       // También puedes hacer que se actualicen automáticamente cada cierto tiempo
-      setInterval(actualizarContadores, 60000); // Actualiza cada 60 segundos
+      setInterval(actualizarContadores, 5000); // Actualiza cada 60 segundos
     });
 </script>
 {% endblock javascripts %}
