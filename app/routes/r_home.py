@@ -19,3 +19,11 @@ def get_home():
 @login_required
 def get_profile():
     return render_template('home/profile.html')
+
+@home.route('/admin_change_password')
+@login_required
+def admin_change_password():
+    if current_user.role == 'Administracion':
+        return render_template('home/admin/admin_change_password.html')
+
+
