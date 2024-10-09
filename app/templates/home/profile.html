@@ -1,0 +1,187 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Mi Perfil {% endblock %} 
+
+{% block body_class %} sidebar-mini {% endblock body_class %}
+
+{% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+{% endblock stylesheets %}
+
+{% block content %}  
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Mi Perfil</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+              <li class="breadcrumb-item active">Mi Perfil</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="card card-primary card-outline">
+              <div class="card-body box-profile">
+                <div class="text-center">
+                  <img class="profile-user-img img-fluid img-circle"
+                       src="/static/assets/img/user2-160x160.jpg"
+                       alt="Foto de perfil del usuario">
+                </div>
+
+                <h3 class="profile-username text-center">
+                  {{ current_user.nombres }} {{ current_user.apellidos }}
+                </h3>
+
+                <p class="text-muted text-center">
+                  {{ current_user.role }}
+                </p>
+
+                <ul class="list-group list-group-unbordered mb-3">
+                  <li class="list-group-item">
+                    <b>DNI</b> <a class="float-right">{{ current_user.dni }}</a>
+                  </li>
+                  <li class="list-group-item">
+                    <b>Teléfono</b> <a class="float-right">{{ current_user.telefono }}</a>
+                  </li>
+                  <li class="list-group-item">
+                    <b>Correo</b> <a class="float-right">{{ current_user.correo }}</a>
+                  </li>
+                  <li class="list-group-item">
+                    <b>Fecha de Registro</b> <a class="float-right">{{ current_user.fecha_registro }}</a>
+                  </li>
+                </ul>
+
+                <a href="#" class="btn btn-primary btn-block"><b>Editar Perfil</b></a>
+              </div>
+            </div>
+
+            <!-- Sección para actualizar la contraseña -->
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">Actualizar Contraseña</h3>
+              </div>
+              <div class="card-body">
+                <form>
+                  <div class="form-group">
+                    <label for="oldPassword"><i class="fas fa-lock mr-1"></i> Antigua Contraseña</label>
+                    <input type="password" class="form-control" id="oldPassword" placeholder="Ingrese su antigua contraseña">
+                  </div>
+                  <div class="form-group">
+                    <label for="newPassword"><i class="fas fa-lock mr-1"></i> Nueva Contraseña</label>
+                    <input type="password" class="form-control" id="newPassword" placeholder="Ingrese su nueva contraseña">
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-block">Actualizar Contraseña</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-9">
+            <div class="card">
+              <div class="card-header p-2">
+                <ul class="nav nav-pills">
+                  <li class="nav-item"><a class="nav-link active" href="#timeline" data-toggle="tab">Línea de tiempo</a></li>
+                </ul>
+              </div>
+              <div class="card-body">
+                <div class="tab-content">
+                  <div class="active tab-pane" id="timeline">
+                    <div class="timeline timeline-inverse">
+                      <div class="time-label">
+                        <span class="bg-danger">
+                          10 Feb. 2014
+                        </span>
+                      </div>
+                      <div>
+                        <i class="fas fa-envelope bg-primary"></i>
+                        <div class="timeline-item">
+                          <span class="time"><i class="far fa-clock"></i> 12:05</span>
+                          <h3 class="timeline-header"><a href="#">Equipo de Soporte</a> te envió un correo electrónico</h3>
+                          <div class="timeline-body">
+                            Etsy doostang zoodles disqus groupon greplin oooj voxy zoodles,
+                            weebly ning heekya handango imeem plugg dopplr jibjab, movity
+                            jajah plickers sifteo edmodo ifttt zimbra. Babblely odeo kaboodle
+                            quora plaxo ideeli hulu weebly balihoo...
+                          </div>
+                          <div class="timeline-footer">
+                            <a href="#" class="btn btn-primary btn-sm">Leer más</a>
+                            <a href="#" class="btn btn-danger btn-sm">Eliminar</a>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <i class="fas fa-user bg-info"></i>
+                        <div class="timeline-item">
+                          <span class="time"><i class="far fa-clock"></i> Hace 5 minutos</span>
+                          <h3 class="timeline-header"><a href="#">Sarah Young</a> aceptó tu solicitud de amistad</h3>
+                        </div>
+                      </div>
+                      <div>
+                        <i class="fas fa-comments bg-warning"></i>
+                        <div class="timeline-item">
+                          <span class="time"><i class="far fa-clock"></i> Hace 27 minutos</span>
+                          <h3 class="timeline-header"><a href="#">Jay White</a> comentó en tu publicación</h3>
+                          <div class="timeline-body">
+                            ¡Llévame a tu líder!
+                            Suiza es pequeña y neutral.
+                            ¡Nosotros somos más como Alemania, ambiciosos y malentendidos!
+                          </div>
+                          <div class="timeline-footer">
+                            <a href="#" class="btn btn-warning btn-flat btn-sm">Ver comentario</a>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="time-label">
+                        <span class="bg-success">
+                          3 Ene. 2014
+                        </span>
+                      </div>
+                      <div>
+                        <i class="fas fa-camera bg-purple"></i>
+                        <div class="timeline-item">
+                          <span class="time"><i class="far fa-clock"></i> Hace 2 días</span>
+                          <h3 class="timeline-header"><a href="#">Mina Lee</a> subió nuevas fotos</h3>
+                          <div class="timeline-body">
+                            <img src="https://placehold.it/150x100" alt="...">
+                            <img src="https://placehold.it/150x100" alt="...">
+                            <img src="https://placehold.it/150x100" alt="...">
+                            <img src="https://placehold.it/150x100" alt="...">
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <i class="far fa-clock bg-gray"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/js/adminlte.min.js"></script>
+{% endblock javascripts %}
