@@ -97,114 +97,80 @@
   
   <script>
     $(document).ready(function() {
-      // Realizar la solicitud GET para cargar usuarios
-      $.get('{{ url_for("usuarios.get_all") }}', function(data) {
-        $('#response-container').empty();
-        $.each(data, function(index, user) {
-          $('#response-container').append(
-            `<tr>
-                <td>${user.dni}</td>
-                <td>${user.nombres}</td>
-                <td>${user.apellidos}</td>
-                <td>${user.correo}</td>
-                <td>${user.telefono}</td>
-                <td>${user.fecha_registro}</td>
-            </tr>`
-          );
-        });
-      }).fail(function() {
-        $('#response-container').html('<tr><td colspan="6">Error al cargar los datos.</td></tr>');
-      });
+            // Realizar la solicitud GET para cargar usuarios al inicio
+            loadUsers();
 
-      // Lógica para crear un nuevo usuario
-      $('#createUserBtn').click(function() {
-        const dni = $('#dni').val();
-        const telefono = $('#telefono').val();
+            // Lógica para crear un nuevo usuario
+            $('#registerForm').on('submit', function(event) {
+                event.preventDefault();
+                
+                const dni = $('#dni').val();
+                const telefono = $('#telefono').val();
 
-        // Hacer la petición POST a la ruta de creación
-        $.ajax({
-          url: '{{ url_for("usuarios.create") }}',
-          type: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({ dni: dni, telefono: telefono }),
-          success: function(response) {
-            alert(response.message);
-            // Reiniciar el formulario
-            $('#userForm')[0].reset();
-            $('#userNames').empty();
-            $('#userLastNames').empty();
-            // Actualizar la tabla de usuarios
-            location.reload();
-          },
-          error: function(jqXHR) {
-            alert(jqXHR.responseJSON.error);
-          }
-        });
-      });
-    });
+                // Realizar la solicitud POST
+                $.ajax({
+                    url: '{{ url_for("usuarios.create") }}',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ dni: dni, telefono: telefono }),
+                    success: function(response) {
+                        // Crear un mensaje de éxito que incluya nombres y apellidos
+                        $('#registerResponse').html(`
+                            <div class="alert alert-success">
+                                ${response.message}<br>
+                                Usuario creado: ${response.usuario.nombres} ${response.usuario.apellidos}
+                            </div>
+                        `);
+                        // Limpiar el formulario
+                        $('#registerForm')[0].reset();
 
-    function filterTable() {
-      let input = document.getElementById('dniSearch');
-      let filter = input.value.toLowerCase();
-      let table = document.querySelector('.table');
-      let rows = table.getElementsByTagName('tr');
-
-      for (let i = 1; i < rows.length; i++) {
-        let cells = rows[i].getElementsByTagName('td');
-        let dniCell = cells[0];
-        if (dniCell) {
-          let txtValue = dniCell.textContent || dniCell.innerText;
-          rows[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
-        }
-      }
-    }
-
-    function fetchUserInfo() {
-      const dni = $('#dni').val();
-      if (dni) {
-        $.get(`/api/get_person/${dni}`, function(data) {
-          $('#userNames').text(data.nombres);
-          $('#userLastNames').text(`${data.apellidoPaterno} ${data.apellidoMaterno}`);
-        }).fail(function() {
-          $('#userNames').text('No se encontraron nombres.');
-          $('#userLastNames').text('No se encontraron apellidos.');
-        });
-      } else {
-        $('#userNames').empty();
-        $('#userLastNames').empty();
-      }
-    }
-  </script>
-  <script>
-    $('#registerForm').on('submit', function(event) {
-            event.preventDefault();
-            
-            const dni = $('#dni').val();
-            const telefono = $('#telefono').val();
-
-            // Realizar la solicitud POST
-            $.ajax({
-                url: '{{ url_for("usuarios.create") }}',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ dni: dni, telefono: telefono }),
-                success: function(response) {
-                    // Crear un mensaje de éxito que incluya nombres y apellidos
-                    $('#registerResponse').html(`
-                        <div class="alert alert-success">
-                            ${response.message}<br>
-                            Usuario creado: ${response.usuario.nombres} ${response.usuario.apellidos}
-                        </div>
-                    `);
-                    // Limpiar el formulario
-                    $('#registerForm')[0].reset();
-                },
-                error: function(xhr) {
-                    const error = xhr.responseJSON ? xhr.responseJSON.error : 'Error desconocido';
-                    $('#registerResponse').html(`<div class="alert alert-danger">${error}</div>`);
-                }
+                        // Volver a cargar la lista de usuarios
+                        loadUsers();
+                    },
+                    error: function(xhr) {
+                        const error = xhr.responseJSON ? xhr.responseJSON.error : 'Error desconocido';
+                        $('#registerResponse').html(`<div class="alert alert-danger">${error}</div>`);
+                    }
+                });
             });
+
+            function loadUsers() {
+                // Realizar la solicitud GET para cargar usuarios
+                $.get('{{ url_for("usuarios.get_all") }}', function(data) {
+                    $('#response-container').empty();
+                    $.each(data, function(index, user) {
+                        $('#response-container').append(
+                            `<tr>
+                                <td>${user.dni}</td>
+                                <td>${user.nombres}</td>
+                                <td>${user.apellidos}</td>
+                                <td>${user.correo}</td>
+                                <td>${user.telefono}</td>
+                                <td>${user.fecha_registro}</td>
+                            </tr>`
+                        );
+                    });
+                }).fail(function() {
+                    $('#response-container').html('<tr><td colspan="6">Error al cargar los datos.</td></tr>');
+                });
+            }
         });
+
+        function filterTable() {
+            let input = document.getElementById('dniSearch');
+            let filter = input.value.toLowerCase();
+            let table = document.querySelector('.table');
+            let rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                let cells = rows[i].getElementsByTagName('td');
+                let dniCell = cells[0];
+                if (dniCell) {
+                    let txtValue = dniCell.textContent || dniCell.innerText;
+                    rows[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            }
+        }
     </script>
 
 {% endblock javascripts %}
