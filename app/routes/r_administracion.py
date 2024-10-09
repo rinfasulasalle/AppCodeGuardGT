@@ -14,7 +14,19 @@ administracion = Blueprint('administracion', __name__)
 @handle_errors
 def get_all():
     administradores = Administracion.query.all()
-    administradores_list = [admin.to_dict() for admin in administradores]
+    administradores_list = []
+    for admin in administradores:
+        usuario = Usuario.query.filter_by(dni=admin.dni_usuario).first()
+        if usuario:
+            administradores_list.append({
+                'dni': usuario.dni,
+                'nombres': usuario.nombres,
+                'apellidos': usuario.apellidos,
+                'correo': usuario.correo,
+                'telefono': usuario.telefono,
+                'fecha_registro': usuario.fecha_registro
+            })
+
     return jsonify(administradores_list), 200
 
 @administracion.route("/get_by_dni_usuario/<dni_usuario>", methods=['GET'])
@@ -25,9 +37,21 @@ def get_by_dni_usuario(dni_usuario):
 
     admin = Administracion.query.filter_by(dni_usuario=dni_usuario).first()
     if admin:
-        return jsonify(admin.to_dict()), 200
+        usuario = Usuario.query.filter_by(dni=admin.dni_usuario).first()
+        if usuario:
+            admin_data = {
+                'dni': usuario.dni,
+                'nombres': usuario.nombres,
+                'apellidos': usuario.apellidos,
+                'correo': usuario.correo,
+                'telefono': usuario.telefono,
+                'fecha_registro': usuario.fecha_registro
+            }
+            return jsonify(admin_data), 200
+        else:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
     else:
-        return jsonify({'error': 'Administrador no encontrado'}), 404
+        return jsonify({'error': 'Estudiante no encontrado'}), 404
 
 @administracion.route("/create", methods=['POST'])
 @handle_errors

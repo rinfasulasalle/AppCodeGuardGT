@@ -13,10 +13,23 @@ estudiante = Blueprint('estudiante', __name__)
 @estudiante.route("/get_all", methods=['GET'])
 @handle_errors
 def get_all():
+    # Obtener todos los estudiantes junto con su información de usuario
     estudiantes = Estudiante.query.all()
-    estudiantes_list = [estudiante.to_dict() for estudiante in estudiantes]
-    return jsonify(estudiantes_list), 200
+    estudiantes_list = []
 
+    for est in estudiantes:
+        usuario = Usuario.query.filter_by(dni=est.dni_usuario).first()
+        if usuario:
+            estudiantes_list.append({
+                'dni': usuario.dni,
+                'nombres': usuario.nombres,
+                'apellidos': usuario.apellidos,
+                'correo': usuario.correo,
+                'telefono': usuario.telefono,
+                'fecha_registro': usuario.fecha_registro
+            })
+
+    return jsonify(estudiantes_list), 200
 @estudiante.route("/get_by_dni_usuario/<dni_usuario>", methods=['GET'])
 @handle_errors
 def get_by_dni_usuario(dni_usuario):
@@ -25,7 +38,19 @@ def get_by_dni_usuario(dni_usuario):
 
     estudiante = Estudiante.query.filter_by(dni_usuario=dni_usuario).first()
     if estudiante:
-        return jsonify(estudiante.to_dict()), 200
+        usuario = Usuario.query.filter_by(dni=estudiante.dni_usuario).first()
+        if usuario:
+            estudiante_data = {
+                'dni': usuario.dni,
+                'nombres': usuario.nombres,
+                'apellidos': usuario.apellidos,
+                'correo': usuario.correo,
+                'telefono': usuario.telefono,
+                'fecha_registro': usuario.fecha_registro
+            }
+            return jsonify(estudiante_data), 200
+        else:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
     else:
         return jsonify({'error': 'Estudiante no encontrado'}), 404
 

@@ -14,7 +14,19 @@ docente = Blueprint('docente', __name__)
 @handle_errors
 def get_all():
     docentes = Docente.query.all()
-    docentes_list = [docente.to_dict() for docente in docentes]
+    docentes_list = []
+    for doce in docentes:
+        usuario = Usuario.query.filter_by(dni=doce.dni_usuario).first()
+        if usuario:
+            docentes_list.append({
+                'dni': usuario.dni,
+                'nombres': usuario.nombres,
+                'apellidos': usuario.apellidos,
+                'correo': usuario.correo,
+                'telefono': usuario.telefono,
+                'fecha_registro': usuario.fecha_registro
+            })
+
     return jsonify(docentes_list), 200
 
 @docente.route("/get_by_dni_usuario/<dni_usuario>", methods=['GET'])
@@ -25,9 +37,21 @@ def get_by_dni_usuario(dni_usuario):
 
     docente = Docente.query.filter_by(dni_usuario=dni_usuario).first()
     if docente:
-        return jsonify(docente.to_dict()), 200
+        usuario = Usuario.query.filter_by(dni=docente.dni_usuario).first()
+        if usuario:
+            docente_data = {
+                'dni': usuario.dni,
+                'nombres': usuario.nombres,
+                'apellidos': usuario.apellidos,
+                'correo': usuario.correo,
+                'telefono': usuario.telefono,
+                'fecha_registro': usuario.fecha_registro
+            }
+            return jsonify(docente_data), 200
+        else:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
     else:
-        return jsonify({'error': 'Docente no encontrado'}), 404
+        return jsonify({'error': 'Estudiante no encontrado'}), 404
 
 @docente.route("/create", methods=['POST'])
 @handle_errors
