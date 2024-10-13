@@ -32,183 +32,157 @@
 {% endblock stylesheets %}
 
 {% block content %}
-  
-  <div class="content-wrapper">
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0 text-dark">Dashboard Administración</h1>
+        </div><!-- /.col -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+            <li class="breadcrumb-item active">Dashboard v1</li>
+          </ol>
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content-header -->
 
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1 class="m-0 text-dark">Dashboard Administración</h1>
-          </div><!-- /.col -->
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Inicio</a></li>
-              <li class="breadcrumb-item active">Dashboard v1</li>
-            </ol>
-          </div><!-- /.col -->
-        </div><!-- /.row -->
-      </div><!-- /.container-fluid -->
-    </div>
-    <!-- /.content-header -->
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Small boxes (Stat box) -->
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-info" id="sin-rol">
+            <div class="inner">
+              <h3>...</h3>
+              <p>Total Usuarios</p>
+            </div>
+            <div class="icon">
+              <i class="fas fa-user-slash"></i>
+            </div>
+            <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-success" id="administracion">
+            <div class="inner">
+              <h3>...</h3>
+              <p>Usuarios Administración</p>
+            </div>
+            <div class="icon">
+              <i class="fas fa-user-cog"></i>
+            </div>
+            <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-warning" id="docente">
+            <div class="inner">
+              <h3>...</h3>
+              <p>Usuarios Docente</p>
+            </div>
+            <div class="icon">
+              <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-danger" id="estudiante">
+            <div class="inner">
+              <h3>...</h3>
+              <p>Usuarios Estudiante</p>
+            </div>
+            <div class="icon">
+              <i class="fas fa-user-graduate"></i>
+            </div>
+            <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+      </div><!-- /.row -->
 
-    <!-- Main content -->
-    <section class="content">
-        <div class="container-fluid">
-        <!-- Small boxes (Stat box) por el momento vacio -->     
-          <!-- Small boxes (Stat box) -->
-          <div class="row">
-            <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-info" id="sin-rol">
-                <div class="inner">
-                <h3>...</h3>
-                <p>Total Usuarios</p>
-                </div>
-                <div class="icon">
-                <i class="fas fa-user-slash"></i> <!-- Icono para Usuarios Sin Rol -->
-                </div>
-                <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
+      <!-- Main row -->
+      <div class="row">
+        <!-- Card de Usuarios -->
+        <section class="col-lg-7 connectedSortable">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Usuarios</h3>
             </div>
+            <div class="card-body" id="usuarios-card-body">
+              <p>Cargando usuarios...</p>
             </div>
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-success" id="administracion">
-                <div class="inner">
-                    <h3>...</h3>
-                <p>Usuarios Administración</p>
-                </div>
-                <div class="icon">
-                <i class="fas fa-user-cog"></i> <!-- Icono para Usuarios Administración -->
-                </div>
-                <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-            </div>
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-warning" id="docente">
-                <div class="inner">
-                <h3>...</h3>
-                <p>Usuarios Docente</p>
-                </div>
-                <div class="icon">
-                <i class="fas fa-chalkboard-teacher"></i> <!-- Icono para Usuarios Docente -->
-                </div>
-                <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-            </div>
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-danger" id="estudiante">
-                <div class="inner">
-                <h3>...</h3>
-                <p>Usuarios Estudiante</p>
-                </div>
-                <div class="icon">
-                <i class="fas fa-user-graduate"></i> <!-- Icono para Usuarios Estudiante -->
-                </div>
-                <a href="#" class="small-box-footer">Más información <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-            </div>
-            <!-- ./col -->
-          </div>     
-        <!-- /.row -->
-        <!-- Main row -->
-        <div class="row">
-            <!-- Card de Usuarios -->
-            <section class="col-lg-7 connectedSortable">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Usuarios</h3>
-                </div>
-                <div class="card-body" id="usuarios-card-body">
-                  <!-- Aquí se llenará con los datos de usuarios -->
-                  <p>Cargando usuarios...</p>
-                </div>
-              </div>
-            </section>
-  
-            <!-- Card de Administradores -->
-            <section class="col-lg-5 connectedSortable">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Administradores</h3>
-                </div>
-                <div class="card-body" id="administradores-card-body">
-                  <!-- Aquí se llenará con los datos de administradores -->
-                  <p>Cargando administradores...</p>
-                </div>
-              </div>
-            </section>
           </div>
-  
-          <div class="row">
-            <!-- Card de Docentes -->
-            <section class="col-lg-7 connectedSortable">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Docentes</h3>
+
+          <!-- Formulario para gestión de roles -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3 class="card-title">Gestionar Roles de Usuario</h3>
+            </div>
+            <div class="card-body">
+              <form id="rolForm">
+                <div class="form-group">
+                  <label for="dniInput">DNI del Usuario</label>
+                  <input type="text" id="dniInput" class="form-control" placeholder="Ingrese el DNI" required>
                 </div>
-                <div class="card-body" id="docentes-card-body">
-                  <!-- Aquí se llenará con los datos de docentes -->
-                  <p>Cargando docentes...</p>
+                <div class="form-group">
+                  <label for="rolSelect">Seleccionar Rol</label>
+                  <select id="rolSelect" class="form-control" required>
+                    <option value="Docente">Docente</option>
+                    <option value="Estudiante">Estudiante</option>
+                  </select>
                 </div>
-              </div>
-            </section>
-  
-            <!-- Card de Estudiantes -->
-            <section class="col-lg-5 connectedSortable">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Estudiantes</h3>
-                </div>
-                <div class="card-body" id="estudiantes-card-body">
-                  <!-- Aquí se llenará con los datos de estudiantes -->
-                  <p>Cargando estudiantes...</p>
-                </div>
-              </div>
-            </section>
+                <button type="submit" class="btn btn-primary">Confirmar Rol</button>
+              </form>
+              <div id="responseMessage" class="mt-3" style="display: none;"></div>
+            </div>
           </div>
-        <!-- /.row (main row) -->
-         <!-- Formulario para gestión de roles -->
-         <div class="row mt-4">
-          <div class="col-lg-7 connectedSortable">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Gestionar Roles de Usuario</h3>
-              </div>
-              <div class="card-body">
-                <form id="rolForm">
-                  <div class="form-group">
-                    <label for="dniInput">DNI del Usuario</label>
-                    <input type="text" id="dniInput" class="form-control" placeholder="Ingrese el DNI" required>
-                  </div>
-                  <div class="form-group">
-                    <label for="rolSelect">Seleccionar Rol</label>
-                    <select id="rolSelect" class="form-control" required>
-                      <!-- <option value="Administracion">Administración</option> -->
-                      <option value="Docente">Docente</option>
-                      <option value="Estudiante">Estudiante</option>
-                    </select>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Confirmar Rol</button>
-                </form>
-                <div id="responseMessage" style="display: none; margin-top: 10px; padding: 10px; border-radius: 5px;"></div>
-              </div>
+        </section>
+
+        <!-- Cards de Administradores, Docentes y Estudiantes -->
+        <div class="col-lg-5">
+          <!-- Card de Administradores -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h3 class="card-title">Administradores</h3>
+            </div>
+            <div class="card-body" id="administradores-card-body">
+              <p>Cargando administradores...</p>
+            </div>
+          </div>
+
+          <!-- Card de Docentes -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h3 class="card-title">Docentes</h3>
+            </div>
+            <div class="card-body" id="docentes-card-body">
+              <p>Cargando docentes...</p>
+            </div>
+          </div>
+
+          <!-- Card de Estudiantes -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h3 class="card-title">Estudiantes</h3>
+            </div>
+            <div class="card-body" id="estudiantes-card-body">
+              <p>Cargando estudiantes...</p>
             </div>
           </div>
         </div>
-        </div><!-- /.container-fluid -->
-    </section>
-    <!-- /.content -->
-  </div>
-  
-
+      </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div><!-- /.content-wrapper -->
 {% endblock content %}
+
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
