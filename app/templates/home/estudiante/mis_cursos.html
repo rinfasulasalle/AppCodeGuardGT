@@ -30,15 +30,43 @@
         margin-top: 30px;
     }
     .evaluaciones-title {
-        font-size: 1.25rem;
-        font-weight: 500;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #007bff; /* Color principal */
     }
     .evaluaciones-list {
-        list-style-type: none; /* Elimina los puntos de la lista */
-        padding: 0; /* Elimina el padding */
+        display: flex; /* Flexbox para alinear tarjetas */
+        flex-wrap: wrap; /* Permitir que las tarjetas se envuelvan */
+        gap: 15px; /* Espacio entre tarjetas */
+    }
+    .evaluation-item {
+        background-color: #f8f9fa; /* Fondo gris claro */
+        border: 1px solid #007bff; /* Borde azul */
+        border-radius: 0.375rem; /* Bordes redondeados */
+        padding: 20px; /* Padding interno */
+        transition: box-shadow 0.2s; /* Transición suave */
+        width: 100%; /* Para pantallas pequeñas */
+        max-width: 400px; /* Ancho máximo para pantallas grandes */
+    }
+    .evaluation-item:hover {
+        box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3); /* Sombra al pasar el mouse */
     }
     .link-form {
         margin-top: 10px;
+    }
+    .form-control {
+        border: 2px solid #007bff; /* Borde azul */
+        border-radius: 0.375rem; /* Bordes redondeados */
+    }
+    .btn-submit {
+        background-color: #28a745; /* Color verde */
+        color: white; /* Texto blanco */
+        border: none; /* Sin borde */
+        border-radius: 0.375rem; /* Bordes redondeados */
+    }
+    .btn-submit:hover {
+        background-color: #218838; /* Color verde oscuro al pasar el mouse */
     }
   </style>
 {% endblock stylesheets %}
@@ -68,7 +96,7 @@
             <div class="card">
               <div class="card-body">
                 <h4 class="evaluaciones-title">Evaluaciones</h4>
-                <ul class="evaluaciones-list" id="evaluaciones-list"></ul>
+                <div class="evaluaciones-list" id="evaluaciones-list"></div>
               </div>
             </div>
           </div>
@@ -122,17 +150,18 @@
               if (Array.isArray(evaluaciones) && evaluaciones.length > 0) {
                 evaluaciones.forEach(evaluacion => {
                   evaluacionesList.append(`
-                    <li>
-                      ${evaluacion.nombre} - ${evaluacion.descripcion}
+                    <div class="evaluation-item">
+                      <h5>${evaluacion.nombre}</h5>
+                      <p>${evaluacion.descripcion}</p>
                       <form class="link-form">
                         <input type="text" class="form-control" placeholder="Ingrese el link de entrega" required>
-                        <button type="submit" class="btn btn-success mt-2">Enviar</button>
+                        <button type="submit" class="btn btn-submit mt-2">Enviar</button>
                       </form>
-                    </li>
+                    </div>
                   `);
                 });
               } else {
-                evaluacionesList.append('<li>No hay evaluaciones disponibles.</li>');
+                evaluacionesList.append('<div>No hay evaluaciones disponibles.</div>');
               }
 
               // Mostrar la card de evaluaciones
