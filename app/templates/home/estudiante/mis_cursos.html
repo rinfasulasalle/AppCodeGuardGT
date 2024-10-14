@@ -84,6 +84,17 @@
           `;
           coursesContainer.append(courseCard);
         });
+
+        // Event listener para capturar el click en "Ver detalles"
+        coursesContainer.on('click', '.btn-primary', function(e) {
+          e.preventDefault();
+          const idCurso = parseInt($(this).data('id'), 10); // Parsear a entero en base 10
+          if (!isNaN(idCurso)) {
+            alert(`ID del Curso: ${idCurso}, ${typeof(idCurso)}`);
+          } else {
+            alert("ID del curso inválido.");
+          }
+        });
       }).fail(function() {
         alert("Error al cargar los cursos.");
       });
