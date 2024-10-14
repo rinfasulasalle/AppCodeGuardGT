@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
-  <!-- Custom CSS -->
   <style>
     .course-card {
         margin-bottom: 20px;
@@ -47,7 +46,6 @@
     <!-- Main content -->
     <section class="content">
       <div class="container-fluid">
-        <!-- Row of courses -->
         <div class="row" id="courses-container">
           <!-- Cards will be injected here via JS -->
         </div>
@@ -62,20 +60,16 @@
   <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
   <!-- AdminLTE App -->
   <script src="/static/assets/js/adminlte.min.js"></script>
-  
+
   <script>
     $(document).ready(function() {
-      // URL dynamically generated using Flask's url_for function
       const url = "{{ url_for('matricula.cursos_por_estudiante', dni_estudiante=current_user.dni) }}";
-      
+
       $.getJSON(url, function(data) {
         const cursos = data.cursos;
         const coursesContainer = $('#courses-container');
-        
-        // Clear container before appending
         coursesContainer.empty();
-        
-        // Iterate over courses and create a card for each
+
         cursos.forEach(curso => {
           const courseCard = `
             <div class="col-lg-4 col-md-6 course-card">
@@ -90,16 +84,9 @@
           `;
           coursesContainer.append(courseCard);
         });
-  
-        // Add click event for "Ver detalles" buttons
-        coursesContainer.on('click', '.btn-primary', function(e) {
-          e.preventDefault(); // Prevent the default action of the link
-          const idCurso = $(this).data('id'); // Get the id_curso from the button's data attribute
-          alert(`ID del curso seleccionado: ${idCurso}`); // Show the alert with the id_curso
-        });
+      }).fail(function() {
+        alert("Error al cargar los cursos.");
       });
     });
   </script>
-  
-  
 {% endblock javascripts %}
