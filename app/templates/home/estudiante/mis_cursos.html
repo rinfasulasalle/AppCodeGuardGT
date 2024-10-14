@@ -26,8 +26,16 @@
     .course-card .card-body {
         padding: 20px;
     }
-    .details-card {
+    .evaluaciones-card {
         margin-top: 30px;
+    }
+    .evaluaciones-title {
+        font-size: 1.25rem;
+        font-weight: 500;
+    }
+    .evaluaciones-list {
+        list-style-type: none; /* Elimina los puntos de la lista */
+        padding: 0; /* Elimina el padding */
     }
   </style>
 {% endblock stylesheets %}
@@ -52,14 +60,12 @@
         <div class="row" id="courses-container">
           <!-- Cards will be injected here via JS -->
         </div>
-
-        <!-- Card para mostrar detalles del curso -->
-        <div class="row details-card" id="details-card" style="display: none;">
-          <div class="col-lg-12">
+        <div class="row">
+          <div class="col-lg-12 evaluaciones-card">
             <div class="card">
               <div class="card-body">
-                <h3 class="course-title">Detalles del Curso</h3>
-                <p id="course-details">Aquí aparecerán los detalles del curso.</p>
+                <h4 class="evaluaciones-title">Evaluaciones</h4>
+                <ul class="evaluaciones-list" id="evaluaciones-list"></ul>
               </div>
             </div>
           </div>
@@ -92,7 +98,7 @@
                 <div class="card-body">
                   <h3 class="course-title">${curso.nombre}</h3>
                   <p class="course-docente">Docente: ${curso.dni_docente}</p>
-                  <a href="#" class="btn btn-primary" data-id="${curso.id_curso}">Ver detalles</a>
+                  <a href="#" class="btn btn-primary" data-id="${curso.id_curso}">Ver evaluaciones</a>
                 </div>
               </div>
             </div>
@@ -105,14 +111,31 @@
           e.preventDefault();
           const idCurso = parseInt($(this).data('id'), 10); // Parsear a entero en base 10
           if (!isNaN(idCurso)) {
-            // Mostrar el ID del curso en la card de detalles
-            $('#course-details').text(`ID del Curso: ${idCurso}`);
-            $('#details-card').show(); // Mostrar la card de detalles
+            // Llamada AJAX para obtener evaluaciones
+            $.getJSON(`evaluacion/get_by_curso/${idCurso}`, function(evaluaciones) {
+              const evaluacionesList = $('#evaluaciones-list');
+              evaluacionesList.empty(); // Limpiar lista anterior
+
+              if (Array.isArray(evaluaciones) && evaluaciones.length > 0) {
+                evaluaciones.forEach(evaluacion => {
+                  evaluacionesList.append(`<li>${evaluacion.nombre} - ${evaluacion.descripcion}</li>`);
+                });
+              } else {
+                evaluacionesList.append('<li>No hay evaluaciones disponibles.</li>');
+              }
+
+              // Mostrar la card de evaluaciones
+              $('.evaluaciones-card').show();
+            }).fail(function() {
+              alert("Error al cargar las evaluaciones.");
+            });
           } else {
-            $('#course-details').text("ID del curso inválido.");
-            $('#details-card').show(); // Asegurarse de que la card se muestre en caso de error
+            alert("ID del curso inválido.");
           }
         });
+
+        // Ocultar la card de evaluaciones inicialmente
+        $('.evaluaciones-card').hide();
       }).fail(function() {
         alert("Error al cargar los cursos.");
       });
