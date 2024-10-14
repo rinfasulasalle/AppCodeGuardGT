@@ -71,7 +71,7 @@ def delete(id_matricula):
 # Ruta para obtener cursos por DNI del estudiante
 @matricula.route("/cursos_por_estudiante/<string:dni_estudiante>", methods=['GET'])
 @handle_errors
-def get_cursos_por_estudiante(dni_estudiante):
+def cursos_por_estudiante(dni_estudiante):
     # Validar que el DNI sea una cadena y tenga exactamente 8 dígitos numéricos
     if not re.match(r'^\d{8}$', dni_estudiante):
         return jsonify({'error': 'El DNI del estudiante debe tener exactamente 8 dígitos'}), 400

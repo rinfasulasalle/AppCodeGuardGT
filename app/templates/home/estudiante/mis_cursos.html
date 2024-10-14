@@ -1,0 +1,96 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Mis Cursos {% endblock %} 
+
+{% block body_class %} sidebar-mini {% endblock body_class %} 
+
+{% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- Custom CSS -->
+  <style>
+    .course-card {
+        margin-bottom: 20px;
+    }
+    .course-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    .course-docente {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+    .course-card .card-body {
+        padding: 20px;
+    }
+  </style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0">Mis Cursos</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <!-- Row of courses -->
+        <div class="row" id="courses-container">
+          <!-- Cards will be injected here via JS -->
+        </div>
+      </div>
+    </section>
+</div>
+
+{% endblock content %}
+
+{% block javascripts %}
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  
+  <script>
+    $(document).ready(function() {
+      // URL dynamically generated using Flask's url_for function
+      const url = "{{ url_for('matricula.cursos_por_estudiante', dni_estudiante=current_user.dni) }}";
+      
+      $.getJSON(url, function(data) {
+        const cursos = data.cursos;
+        const coursesContainer = $('#courses-container');
+        
+        // Clear container before appending
+        coursesContainer.empty();
+        
+        // Iterate over courses and create a card for each
+        cursos.forEach(curso => {
+          const courseCard = `
+            <div class="col-lg-4 col-md-6 course-card">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="course-title">${curso.nombre}</h3>
+                  <p class="course-docente">Docente: ${curso.dni_docente}</p>
+                  <a href="#" class="btn btn-primary">Ver detalles</a>
+                </div>
+              </div>
+            </div>
+          `;
+          coursesContainer.append(courseCard);
+        });
+      });
+    });
+  </script>
+{% endblock javascripts %}

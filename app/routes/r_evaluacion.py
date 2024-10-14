@@ -116,3 +116,22 @@ def update_evaluacion(id_evaluacion):
     db.session.commit()
 
     return jsonify({'message': 'Evaluación actualizada exitosamente', 'evaluacion': evaluacion.to_dict()}), 200
+
+
+# Obtener todas las evaluaciones por id_curso
+@evaluacion.route("/get_by_curso/<int:id_curso>", methods=['GET'])
+@handle_errors
+def get_evaluaciones_by_curso(id_curso):
+    # Verificar si el curso existe
+    curso = Curso.query.filter_by(id_curso=id_curso).first()
+    if not curso:
+        return jsonify({'error': 'El curso no existe'}), 404
+
+    # Obtener todas las evaluaciones asociadas a ese curso
+    evaluaciones = Evaluacion.query.filter_by(id_curso=id_curso).all()
+
+    if not evaluaciones:
+        return jsonify({'message': 'No hay evaluaciones para este curso'}), 200
+
+    evaluaciones_list = [evaluacion.to_dict() for evaluacion in evaluaciones]
+    return jsonify(evaluaciones_list), 200
