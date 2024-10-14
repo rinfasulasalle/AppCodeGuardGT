@@ -37,6 +37,9 @@
         list-style-type: none; /* Elimina los puntos de la lista */
         padding: 0; /* Elimina el padding */
     }
+    .link-form {
+        margin-top: 10px;
+    }
   </style>
 {% endblock stylesheets %}
 
@@ -106,7 +109,7 @@
           coursesContainer.append(courseCard);
         });
 
-        // Event listener para capturar el click en "Ver detalles"
+        // Event listener para capturar el click en "Ver evaluaciones"
         coursesContainer.on('click', '.btn-primary', function(e) {
           e.preventDefault();
           const idCurso = parseInt($(this).data('id'), 10); // Parsear a entero en base 10
@@ -118,7 +121,15 @@
 
               if (Array.isArray(evaluaciones) && evaluaciones.length > 0) {
                 evaluaciones.forEach(evaluacion => {
-                  evaluacionesList.append(`<li>${evaluacion.nombre} - ${evaluacion.descripcion}</li>`);
+                  evaluacionesList.append(`
+                    <li>
+                      ${evaluacion.nombre} - ${evaluacion.descripcion}
+                      <form class="link-form">
+                        <input type="text" class="form-control" placeholder="Ingrese el link de entrega" required>
+                        <button type="submit" class="btn btn-success mt-2">Enviar</button>
+                      </form>
+                    </li>
+                  `);
                 });
               } else {
                 evaluacionesList.append('<li>No hay evaluaciones disponibles.</li>');
@@ -132,6 +143,13 @@
           } else {
             alert("ID del curso inválido.");
           }
+        });
+
+        // Manejar el evento de envío del formulario de enlace
+        $(document).on('submit', '.link-form', function(e) {
+          e.preventDefault(); // Prevenir el envío del formulario por defecto
+          const link = $(this).find('input').val(); // Obtener el valor del input
+          alert(`Enlace ingresado: ${link}`); // Mostrar el enlace en un alert
         });
 
         // Ocultar la card de evaluaciones inicialmente
