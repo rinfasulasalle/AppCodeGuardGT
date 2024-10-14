@@ -26,6 +26,9 @@
     .course-card .card-body {
         padding: 20px;
     }
+    .details-card {
+        margin-top: 30px;
+    }
   </style>
 {% endblock stylesheets %}
 
@@ -48,6 +51,18 @@
       <div class="container-fluid">
         <div class="row" id="courses-container">
           <!-- Cards will be injected here via JS -->
+        </div>
+
+        <!-- Card para mostrar detalles del curso -->
+        <div class="row details-card" id="details-card" style="display: none;">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h3 class="course-title">Detalles del Curso</h3>
+                <p id="course-details">Aquí aparecerán los detalles del curso.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -90,9 +105,12 @@
           e.preventDefault();
           const idCurso = parseInt($(this).data('id'), 10); // Parsear a entero en base 10
           if (!isNaN(idCurso)) {
-            alert(`ID del Curso: ${idCurso}, ${typeof(idCurso)}`);
+            // Mostrar el ID del curso en la card de detalles
+            $('#course-details').text(`ID del Curso: ${idCurso}`);
+            $('#details-card').show(); // Mostrar la card de detalles
           } else {
-            alert("ID del curso inválido.");
+            $('#course-details').text("ID del curso inválido.");
+            $('#details-card').show(); // Asegurarse de que la card se muestre en caso de error
           }
         });
       }).fail(function() {
