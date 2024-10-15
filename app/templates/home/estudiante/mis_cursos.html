@@ -177,15 +177,23 @@
         // Manejar el evento de envío del formulario de enlace
         $(document).on('submit', '.link-form', function(e) {
           e.preventDefault(); // Prevenir el envío del formulario por defecto
-          const link = $(this).find('input').val(); // Obtener el valor del input
+          const linkInput = $(this).find('input'); // Obtener el elemento de input
+          const link = linkInput.val(); // Obtener el valor del input
+
+          // Aquí puedes agregar la lógica para enviar el enlace al servidor, si es necesario.
+
+          // Deshabilitar el formulario
+          linkInput.prop('disabled', true);
+          $(this).find('button').prop('disabled', true).text('Enlace enviado'); // Cambiar el texto del botón
+
           alert(`Enlace ingresado: ${link}`); // Mostrar el enlace en un alert
         });
 
         // Ocultar la card de evaluaciones inicialmente
         $('.evaluaciones-card').hide();
-      }).fail(function() {
-        alert("Error al cargar los cursos.");
-      });
+        }).fail(function() {
+          alert("Error al cargar los cursos.");
+        });
     });
   </script>
 {% endblock javascripts %}
