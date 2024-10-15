@@ -3,8 +3,8 @@ from utils.db import db
 class Evaluacion(db.Model):
     id_evaluacion = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_curso = db.Column(db.Integer, db.ForeignKey('curso.id_curso', ondelete='CASCADE'), nullable=False)
-    nombre = db.Column(db.String(100), nullable=False, unique=True)
-    descripcion = db.Column(db.String(200), nullable=False)
+    nombre = db.Column(db.String(100), nullable=False, unique=False)
+    descripcion = db.Column(db.Text, nullable=False)
 
     def __init__(self, id_curso, nombre, descripcion):
         self.id_curso = id_curso
