@@ -84,7 +84,7 @@
                                   data-id="${evaluacion.id_evaluacion}" 
                                   data-nombre="${evaluacion.nombre}" 
                                   data-descripcion="${evaluacion.descripcion}">
-                            Realizar Evaluación
+                            Realizar Revisión
                           </button>
                         </li>
                       `).join('')
@@ -99,7 +99,7 @@
 
         $('#evaluaciones-list').html(evaluacionesHTML);
 
-        // Añadir evento a los botones "Realizar Evaluación"
+        // Añadir evento a los botones "Realizar Revisión"
         $('.realizar-evaluacion-btn').click(function () {
           const id = $(this).data('id');
           const nombre = $(this).data('nombre');
