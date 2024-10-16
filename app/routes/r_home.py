@@ -52,3 +52,13 @@ def mis_cursos():
     if current_user.role == 'Estudiante':
         return render_template('home/estudiante/mis_cursos.html')
     return check_access('Estudiante')
+
+
+# ----------------------------------
+# PARA DOCENTES
+@home.route('/docente_cursos')
+@login_required
+def docente_cursos():
+    if current_user.role == 'Docente':
+        return render_template('home/docente/docente_cursos.html')
+    return check_access('Docente')
