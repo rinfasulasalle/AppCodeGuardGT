@@ -42,6 +42,11 @@ def create():
 
     if not matricula:
         return jsonify({'error': 'La matrícula no existe'}), 404
+    
+    # Validar que el URL comience con 'https://sqlfiddle.com/mysql/online-compiler?id='
+    url_prefix = 'https://sqlfiddle.com/mysql/online-compiler?id='
+    if not url_codigo or not url_codigo.startswith(url_prefix):
+        return jsonify({'error': 'El URL del código no tiene un formato válido'}), 400
 
     # Validar que no exista un código para la misma evaluación y matrícula
     codigo_existente = Codigo.query.filter_by(id_evaluacion=id_evaluacion, id_matricula=id_matricula).first()
@@ -55,10 +60,6 @@ def create():
     if curso_evaluacion != curso_matricula:
         return jsonify({'error': 'El curso asociado a la evaluación y la matrícula no coincide'}), 400
 
-    # Validar que el URL comience con 'https://sqlfiddle.com/mysql/online-compiler?id='
-    url_prefix = 'https://sqlfiddle.com/mysql/online-compiler?id='
-    if not url_codigo or not url_codigo.startswith(url_prefix):
-        return jsonify({'error': 'El URL del código no tiene un formato válido'}), 400
 
     # Crear el nuevo código
     nuevo_codigo = Codigo(id_evaluacion=id_evaluacion, id_matricula=id_matricula, url_codigo=url_codigo)
