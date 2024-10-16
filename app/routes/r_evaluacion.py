@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from models.evaluacion import Evaluacion
 from models.curso import Curso
+from models.docente import Docente
 from utils.db import db
 from utils.error_handler import handle_errors
 
@@ -135,3 +136,45 @@ def get_evaluaciones_by_curso(id_curso):
 
     evaluaciones_list = [evaluacion.to_dict() for evaluacion in evaluaciones]
     return jsonify(evaluaciones_list), 200
+
+
+@evaluacion.route("/get_evaluaciones_by_docente/<string:dni_docente>", methods=['GET'])
+@handle_errors
+def get_evaluaciones_by_docente(dni_docente):
+    # Verificar si el docente existe
+    docente = Docente.query.filter_by(dni_usuario=dni_docente).first()
+    if not docente:
+        return jsonify({'error': 'Docente no encontrado'}), 404
+
+    # Obtener todos los cursos que imparte el docente
+    cursos = Curso.query.filter_by(dni_docente=dni_docente).all()
+
+    if not cursos:
+        return jsonify({'message': 'No hay cursos asociados a este docente'}), 200
+
+    # Preparar la estructura para la respuesta
+    response = {
+        'cursos': []
+    }
+    
+    for curso in cursos:
+        # Obtener todas las evaluaciones asociadas a este curso
+        evaluaciones = Evaluacion.query.filter_by(id_curso=curso.id_curso).all()
+        
+        # Crear la entrada del curso en la respuesta
+        curso_info = {
+            'curso': {
+                'dni_docente': curso.dni_docente,
+                'id_curso': curso.id_curso,
+                'nombre': curso.nombre
+            },
+            'evaluaciones': []
+        }
+        
+        # Agregar evaluaciones al curso
+        for evaluacion in evaluaciones:
+            curso_info['evaluaciones'].append(evaluacion.to_dict())
+
+        response['cursos'].append(curso_info)
+
+    return jsonify(response), 200

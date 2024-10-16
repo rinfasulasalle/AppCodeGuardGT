@@ -62,3 +62,10 @@ def docente_cursos():
     if current_user.role == 'Docente':
         return render_template('home/docente/docente_cursos.html')
     return check_access('Docente')
+
+@home.route('/docente_evaluaciones')
+@login_required
+def docente_evaluaciones():
+    if current_user.role == 'Docente':
+        return render_template('home/docente/docente_evaluaciones.html')
+    return check_access('Docente')

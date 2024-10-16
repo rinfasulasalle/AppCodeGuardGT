@@ -114,13 +114,13 @@
         </a>
         <ul class="nav nav-treeview">
           <li class="nav-item">
-            <a href="/evaluaciones.html" class="nav-link {% if 'evaluaciones' in segment %} active {% endif %}">
+            <a href="{{ url_for('home.docente_evaluaciones') }}" class="nav-link {% if 'evaluaciones' in segment %} active {% endif %}">
               <i class="far fa-circle nav-icon"></i>
               <p>Gestión de Evaluaciones</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="/revision-evaluaciones.html" class="nav-link {% if 'revision-evaluaciones' in segment %} active {% endif %}">
+            <a href="{{ url_for('home.docente_evaluaciones') }}" class="nav-link {% if 'revision-evaluaciones' in segment %} active {% endif %}">
               <i class="far fa-circle nav-icon"></i>
               <p>Revisión de Evaluaciones</p>
             </a>
