@@ -149,7 +149,7 @@
           if (Array.isArray(evaluaciones) && evaluaciones.length > 0) {
             evaluaciones.forEach(evaluacion => {
               evaluacionesList.append(`
-                <div class="evaluation-item">
+                <div class="evaluation-item" data-id-evaluacion="${evaluacion.id_evaluacion}">
                   <h5>${evaluacion.nombre}</h5>
                   <p>${evaluacion.descripcion}</p>
                   <form class="link-form" data-id-curso="${idCurso}">
@@ -179,7 +179,8 @@
       const idCurso = form.data('id-curso');
       const dniEstudiante = "{{ current_user.dni }}"; // DNI del usuario logueado
       const linkInput = form.find('input');
-      const link = linkInput.val();
+      const urlCodigo = linkInput.val(); // Capturar el URL del input
+      const idEvaluacion = form.closest('.evaluation-item').data('id-evaluacion'); // Capturar el id_evaluacion
 
       // Solicitar el ID de matrícula usando la ruta Flask
       $.ajax({
@@ -192,10 +193,14 @@
         }),
         success: function(response) {
           const idMatricula = response.id_matricula;
-          alert(`ID Matrícula: ${idMatricula}`); // Mostrar el ID de matrícula
+          
+          // Imprimir los valores en la consola
+          console.log(`ID Evaluación: ${idEvaluacion}`);
+          console.log(`ID Matrícula: ${idMatricula}`);
+          console.log(`URL Código: ${urlCodigo}`);
 
-          // Aquí podrías agregar la lógica para enviar el enlace junto con el id_matricula
-          console.log(`Enlace: ${link}, ID Matrícula: ${idMatricula}`);
+          // También puedes mostrarlo en un alert o en el DOM
+          alert(`ID Evaluación: ${idEvaluacion}\nID Matrícula: ${idMatricula}\nURL Código: ${urlCodigo}`);
 
           // Deshabilitar el formulario después del envío
           linkInput.prop('disabled', true);
