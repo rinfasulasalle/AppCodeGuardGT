@@ -96,3 +96,37 @@ def cursos_por_estudiante(dni_estudiante):
             })
 
     return jsonify({'cursos': cursos_list}), 200
+
+# nueva ruta
+@matricula.route("/get_matricula_by_dni_y_curso", methods=['POST'])
+@handle_errors
+def get_matricula_by_dni_y_curso():
+    data = request.get_json()
+    
+    # Validar que se hayan proporcionado los datos
+    if not data:
+        return jsonify({'error': 'Datos no proporcionados'}), 400
+
+    dni_estudiante = data.get('dni_estudiante')
+    id_curso = data.get('id_curso')
+
+    # Validar el formato del DNI
+    if not dni_estudiante or not re.match(r'^\d{8}$', dni_estudiante):
+        return jsonify({'error': 'El DNI del estudiante debe tener exactamente 8 dígitos'}), 400
+
+    # Validar que se haya proporcionado el ID del curso y sea entero
+    if not id_curso or not isinstance(id_curso, int):
+        return jsonify({'error': 'El ID del curso es requerido y debe ser un entero'}), 400
+
+    try:
+        # Buscar la matrícula por DNI e ID de curso
+        matricula = Matricula.query.filter_by(dni_estudiante=dni_estudiante, id_curso=id_curso).first()
+        if not matricula:
+            return jsonify({'error': 'Matrícula no encontrada para este estudiante y curso'}), 404
+
+        # Retornar solo el ID de la matrícula
+        return jsonify({'id_matricula': matricula.id_matricula}), 200
+        
+    except Exception as e:
+        # Manejo de excepciones generales
+        return jsonify({'error': str(e)}), 500

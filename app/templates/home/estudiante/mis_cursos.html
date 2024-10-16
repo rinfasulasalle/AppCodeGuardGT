@@ -115,85 +115,109 @@
 
   <script>
     $(document).ready(function() {
-      const url = "{{ url_for('matricula.cursos_por_estudiante', dni_estudiante=current_user.dni) }}";
+  const urlCursos = "{{ url_for('matricula.cursos_por_estudiante', dni_estudiante=current_user.dni) }}";
 
-      $.getJSON(url, function(data) {
-        const cursos = data.cursos;
-        const coursesContainer = $('#courses-container');
-        coursesContainer.empty();
+  $.getJSON(urlCursos, function(data) {
+    const cursos = data.cursos;
+    const coursesContainer = $('#courses-container');
+    coursesContainer.empty();
 
-        cursos.forEach(curso => {
-          const courseCard = `
-            <div class="col-lg-4 col-md-6 course-card">
-              <div class="card">
-                <div class="card-body">
-                  <h3 class="course-title">${curso.nombre}</h3>
-                  <p class="course-docente">Docente: ${curso.dni_docente}</p>
-                  <a href="#" class="btn btn-primary" data-id="${curso.id_curso}">Ver evaluaciones</a>
-                </div>
-              </div>
+    cursos.forEach(curso => {
+      const courseCard = `
+        <div class="col-lg-4 col-md-6 course-card">
+          <div class="card">
+            <div class="card-body">
+              <h3 class="course-title">${curso.nombre}</h3>
+              <p class="course-docente">Docente: ${curso.dni_docente}</p>
+              <a href="#" class="btn btn-primary" data-id="${curso.id_curso}">Ver evaluaciones</a>
             </div>
-          `;
-          coursesContainer.append(courseCard);
-        });
+          </div>
+        </div>
+      `;
+      coursesContainer.append(courseCard);
+    });
 
-        // Event listener para capturar el click en "Ver evaluaciones"
-        coursesContainer.on('click', '.btn-primary', function(e) {
-          e.preventDefault();
-          const idCurso = parseInt($(this).data('id'), 10); // Parsear a entero en base 10
-          if (!isNaN(idCurso)) {
-            // Llamada AJAX para obtener evaluaciones
-            $.getJSON(`evaluacion/get_by_curso/${idCurso}`, function(evaluaciones) {
-              const evaluacionesList = $('#evaluaciones-list');
-              evaluacionesList.empty(); // Limpiar lista anterior
+    // Event listener para capturar el click en "Ver evaluaciones"
+    coursesContainer.on('click', '.btn-primary', function(e) {
+      e.preventDefault();
+      const idCurso = parseInt($(this).data('id'), 10);
+      if (!isNaN(idCurso)) {
+        $.getJSON(`evaluacion/get_by_curso/${idCurso}`, function(evaluaciones) {
+          const evaluacionesList = $('#evaluaciones-list');
+          evaluacionesList.empty();
 
-              if (Array.isArray(evaluaciones) && evaluaciones.length > 0) {
-                evaluaciones.forEach(evaluacion => {
-                  evaluacionesList.append(`
-                    <div class="evaluation-item">
-                      <h5>${evaluacion.nombre}</h5>
-                      <p>${evaluacion.descripcion}</p>
-                      <form class="link-form">
-                        <input type="text" class="form-control" placeholder="Ingrese el link de entrega" required>
-                        <button type="submit" class="btn btn-submit mt-2">Enviar</button>
-                      </form>
-                    </div>
-                  `);
-                });
-              } else {
-                evaluacionesList.append('<div>No hay evaluaciones disponibles.</div>');
-              }
-
-              // Mostrar la card de evaluaciones
-              $('.evaluaciones-card').show();
-            }).fail(function() {
-              alert("Error al cargar las evaluaciones.");
+          if (Array.isArray(evaluaciones) && evaluaciones.length > 0) {
+            evaluaciones.forEach(evaluacion => {
+              evaluacionesList.append(`
+                <div class="evaluation-item">
+                  <h5>${evaluacion.nombre}</h5>
+                  <p>${evaluacion.descripcion}</p>
+                  <form class="link-form" data-id-curso="${idCurso}">
+                    <input type="text" class="form-control" placeholder="Ingrese el link de entrega" required>
+                    <button type="submit" class="btn btn-submit mt-2">Enviar</button>
+                  </form>
+                </div>
+              `);
             });
           } else {
-            alert("ID del curso inválido.");
+            evaluacionesList.append('<div>No hay evaluaciones disponibles.</div>');
           }
-        });
 
-        // Manejar el evento de envío del formulario de enlace
-        $(document).on('submit', '.link-form', function(e) {
-          e.preventDefault(); // Prevenir el envío del formulario por defecto
-          const linkInput = $(this).find('input'); // Obtener el elemento de input
-          const link = linkInput.val(); // Obtener el valor del input
-
-          // Aquí puedes agregar la lógica para enviar el enlace al servidor, si es necesario.
-
-          // Deshabilitar el formulario
-          linkInput.prop('disabled', true);
-          $(this).find('button').prop('disabled', true).text('Enlace enviado'); // Cambiar el texto del botón
-
-          alert(`Enlace ingresado: ${link}`); // Mostrar el enlace en un alert
-        });
-
-        // Ocultar la card de evaluaciones inicialmente
-        $('.evaluaciones-card').hide();
+          $('.evaluaciones-card').show();
         }).fail(function() {
-          alert("Error al cargar los cursos.");
+          alert("Error al cargar las evaluaciones.");
         });
+      } else {
+        alert("ID del curso inválido.");
+      }
     });
+
+    // Manejar el evento de envío del formulario de enlace
+    $(document).on('submit', '.link-form', function(e) {
+      e.preventDefault();
+      const form = $(this);
+      const idCurso = form.data('id-curso');
+      const dniEstudiante = "{{ current_user.dni }}"; // DNI del usuario logueado
+      const linkInput = form.find('input');
+      const link = linkInput.val();
+
+      // Solicitar el ID de matrícula usando la ruta Flask
+      $.ajax({
+        url: "{{ url_for('matricula.get_matricula_by_dni_y_curso') }}",
+        method: "POST", // Cambiar a POST
+        contentType: "application/json", // Asegurarse de que se especifica JSON
+        data: JSON.stringify({
+          dni_estudiante: dniEstudiante,
+          id_curso: idCurso
+        }),
+        success: function(response) {
+          const idMatricula = response.id_matricula;
+          alert(`ID Matrícula: ${idMatricula}`); // Mostrar el ID de matrícula
+
+          // Aquí podrías agregar la lógica para enviar el enlace junto con el id_matricula
+          console.log(`Enlace: ${link}, ID Matrícula: ${idMatricula}`);
+
+          // Deshabilitar el formulario después del envío
+          linkInput.prop('disabled', true);
+          form.find('button').prop('disabled', true).text('Enlace enviado');
+        },
+        error: function(xhr) {
+          if (xhr.status === 400) {
+            alert("Error: Datos no proporcionados o formato inválido.");
+          } else if (xhr.status === 404) {
+            alert("Error: Matrícula no encontrada para este estudiante y curso.");
+          } else {
+            alert("Error al obtener el ID de matrícula.");
+          }
+        }
+      });
+    });
+
+    $('.evaluaciones-card').hide();
+  }).fail(function() {
+    alert("Error al cargar los cursos.");
+  });
+});
+
   </script>
 {% endblock javascripts %}
