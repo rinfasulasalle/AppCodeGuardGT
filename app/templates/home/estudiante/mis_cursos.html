@@ -114,123 +114,123 @@
   <script src="/static/assets/js/adminlte.min.js"></script>
 
   <script>
-    $(document).ready(function() {
-      const urlCursos = "{{ url_for('matricula.cursos_por_estudiante', dni_estudiante=current_user.dni) }}";
+$(document).ready(function() {
+  const urlCursos = "{{ url_for('matricula.cursos_por_estudiante', dni_estudiante=current_user.dni) }}";
 
-      $.getJSON(urlCursos, function(data) {
-        const cursos = data.cursos;
-        const coursesContainer = $('#courses-container');
-        coursesContainer.empty();
+  $.getJSON(urlCursos, function(data) {
+    const cursos = data.cursos;
+    const coursesContainer = $('#courses-container');
+    coursesContainer.empty();
 
-        cursos.forEach(curso => {
-          const courseCard = `
-            <div class="col-lg-4 col-md-6 course-card">
-              <div class="card">
-                <div class="card-body">
-                  <h3 class="course-title">${curso.nombre}</h3>
-                  <p class="course-docente">Docente: ${curso.dni_docente}</p>
-                  <a href="#" class="btn btn-primary" data-id="${curso.id_curso}">Ver evaluaciones</a>
-                </div>
-              </div>
+    cursos.forEach(curso => {
+      const courseCard = `
+        <div class="col-lg-4 col-md-6 course-card">
+          <div class="card">
+            <div class="card-body">
+              <h3 class="course-title">${curso.nombre}</h3>
+              <p class="course-docente">Docente: ${curso.dni_docente}</p>
+              <a href="#" class="btn btn-primary" data-id="${curso.id_curso}">Ver evaluaciones</a>
             </div>
-          `;
-          coursesContainer.append(courseCard);
-        });
+          </div>
+        </div>
+      `;
+      coursesContainer.append(courseCard);
+    });
 
-        // Event listener para capturar el click en "Ver evaluaciones"
-        coursesContainer.on('click', '.btn-primary', function(e) {
-          e.preventDefault();
-          const idCurso = parseInt($(this).data('id'), 10);
-          if (!isNaN(idCurso)) {
-            $.getJSON(`evaluacion/get_by_curso/${idCurso}`, function(evaluaciones) {
-              const evaluacionesList = $('#evaluaciones-list');
-              evaluacionesList.empty();
+    // Event listener para capturar el click en "Ver evaluaciones"
+    coursesContainer.on('click', '.btn-primary', function(e) {
+      e.preventDefault();
+      const idCurso = parseInt($(this).data('id'), 10);
+      if (!isNaN(idCurso)) {
+        $.getJSON(`evaluacion/get_by_curso/${idCurso}`, function(evaluaciones) {
+          const evaluacionesList = $('#evaluaciones-list');
+          evaluacionesList.empty();
 
-              if (Array.isArray(evaluaciones) && evaluaciones.length > 0) {
-                evaluaciones.forEach(evaluacion => {
-                  evaluacionesList.append(`
-                    <div class="evaluation-item" data-id-evaluacion="${evaluacion.id_evaluacion}">
-                      <h5>${evaluacion.nombre}</h5>
-                      <p>${evaluacion.descripcion}</p>
-                      <form class="link-form" data-id-curso="${idCurso}">
-                        <input type="text" class="form-control" placeholder="Ingrese el link de entrega" required>
-                        <button type="submit" class="btn btn-submit mt-2">Enviar</button>
-                        <div class="message mt-2"></div> <!-- Contenedor para mensajes -->
-                      </form>
-                    </div>
-                  `);
-                });
-              } else {
-                evaluacionesList.append('<div>No hay evaluaciones disponibles.</div>');
-              }
-
-              $('.evaluaciones-card').show();
+          if (Array.isArray(evaluaciones) && evaluaciones.length > 0) {
+            evaluaciones.forEach(evaluacion => {
+              evaluacionesList.append(`
+                <div class="evaluation-item" data-id-evaluacion="${evaluacion.id_evaluacion}">
+                  <h5>${evaluacion.nombre}</h5>
+                  <p>${evaluacion.descripcion}</p>
+                  <form class="link-form" data-id-curso="${idCurso}">
+                    <input type="text" class="form-control" placeholder="Ingrese el link de entrega" required>
+                    <button type="submit" class="btn btn-submit mt-2">Enviar</button>
+                    <div class="message mt-2"></div> <!-- Contenedor para mensajes -->
+                  </form>
+                </div>
+              `);
             });
+          } else {
+            evaluacionesList.append('<div>No hay evaluaciones disponibles.</div>');
           }
+
+          $('.evaluaciones-card').show();
         });
+      }
+    });
 
-        // Manejar el evento de envío del formulario de enlace
-        $(document).on('submit', '.link-form', function(e) {
-          e.preventDefault();
-          const form = $(this);
-          const idCurso = form.data('id-curso');
-          const dniEstudiante = "{{ current_user.dni }}"; // DNI del usuario logueado
-          const linkInput = form.find('input');
-          const urlCodigo = linkInput.val(); // Capturar el URL del input
-          const idEvaluacion = form.closest('.evaluation-item').data('id-evaluacion'); // Capturar el id_evaluacion
+    // Manejar el evento de envío del formulario de enlace
+    $(document).on('submit', '.link-form', function(e) {
+      e.preventDefault();
+      const form = $(this);
+      const idCurso = form.data('id-curso');
+      const dniEstudiante = "{{ current_user.dni }}"; // DNI del usuario logueado
+      const linkInput = form.find('input');
+      const urlCodigo = linkInput.val(); // Capturar el URL del input
+      const idEvaluacion = form.closest('.evaluation-item').data('id-evaluacion'); // Capturar el id_evaluacion
 
-          // Solicitar el ID de matrícula usando la ruta Flask
+      // Solicitar el ID de matrícula usando la ruta Flask
+      $.ajax({
+        url: "{{ url_for('matricula.get_matricula_by_dni_y_curso') }}",
+        method: "POST", // Cambiar a POST
+        contentType: "application/json", // Asegurarse de que se especifica JSON
+        data: JSON.stringify({
+          dni_estudiante: dniEstudiante,
+          id_curso: idCurso
+        }),
+        success: function(response) {
+          const idMatricula = response.id_matricula;
+
+          // Crear el código en la ruta /create
           $.ajax({
-            url: "{{ url_for('matricula.get_matricula_by_dni_y_curso') }}",
-            method: "POST", // Cambiar a POST
-            contentType: "application/json", // Asegurarse de que se especifica JSON
+            url: "{{ url_for('codigo.create') }}", // Ruta para crear el código
+            method: "POST",
+            contentType: "application/json",
             data: JSON.stringify({
-              dni_estudiante: dniEstudiante,
-              id_curso: idCurso
+              id_evaluacion: idEvaluacion,
+              id_matricula: idMatricula,
+              url_codigo: urlCodigo
             }),
-            success: function(response) {
-              const idMatricula = response.id_matricula;
+            success: function(createResponse) {
+              // Mensaje de éxito
+              form.find('.message').html(`<div class="alert alert-success">${createResponse.message}</div>`);
 
-              // Crear el código en la ruta /create
-              $.ajax({
-                url: "{{ url_for('codigo.create') }}", // Ruta para crear el código
-                method: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({
-                  id_evaluacion: idEvaluacion,
-                  id_matricula: idMatricula,
-                  url_codigo: urlCodigo
-                }),
-                success: function(createResponse) {
-                  // Mensaje de éxito
-                  form.find('.message').html(`<div class="alert alert-success">${createResponse.message}</div>`);
-                },
-                error: function(createErrorResponse) {
-                  // Mensaje de error (manejados en el backend)
-                  form.find('.message').html(`<div class="alert alert-danger">${createErrorResponse.responseJSON.error}</div>`);
-                }
-              });
-
-              // Imprimir los valores en la consola
-              console.log(`ID Evaluación: ${idEvaluacion}`);
-              console.log(`ID Matrícula: ${idMatricula}`);
-              console.log(`URL Código: ${urlCodigo}`);
-
-              // Deshabilitar el formulario después del envío
+              // Bloquear el formulario después del envío exitoso
               linkInput.prop('disabled', true);
               form.find('button').prop('disabled', true).text('Enlace enviado');
             },
-            error: function() {
-              // No manejes errores, ya está manejado en el backend
+            error: function(createErrorResponse) {
+              // Mensaje de error (manejados en el backend)
+              form.find('.message').html(`<div class="alert alert-danger">${createErrorResponse.responseJSON.error}</div>`);
             }
           });
-        });
 
-        $('.evaluaciones-card').hide();
-      }).fail(function() {
-        alert("Error al cargar los cursos.");
+          // Imprimir los valores en la consola
+          console.log(`ID Evaluación: ${idEvaluacion}`);
+          console.log(`ID Matrícula: ${idMatricula}`);
+          console.log(`URL Código: ${urlCodigo}`);
+        },
+        error: function() {
+          // No manejes errores, ya está manejado en el backend
+        }
       });
     });
+
+    $('.evaluaciones-card').hide();
+  }).fail(function() {
+    alert("Error al cargar los cursos.");
+  });
+});
 
   </script>
 {% endblock javascripts %}
