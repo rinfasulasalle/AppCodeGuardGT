@@ -17,6 +17,7 @@ from routes.r_evaluacion import evaluacion
 from routes.r_matricula import matricula
 from routes.r_codigo import codigo
 from routes.r_resultado import resultado
+from routes.r_estado_evaluacion import estado_evaluacion
 from routes.r_auth import auth
 from routes.r_home import home
 
@@ -71,6 +72,7 @@ def create_app():
     app.register_blueprint(matricula, url_prefix='/matricula')
     app.register_blueprint(codigo, url_prefix='/codigo')
     app.register_blueprint(resultado, url_prefix='/resultado')
+    app.register_blueprint(estado_evaluacion, url_prefix = '/estado_evaluacion')
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(home, url_prefix = '/')
     
