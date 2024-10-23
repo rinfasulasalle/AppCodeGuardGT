@@ -5,6 +5,7 @@ from models.matricula import Matricula
 from models.curso import Curso
 from utils.db import db
 from utils.error_handler import handle_errors
+from utils.selenium_util import extract_sql_code_from_url
 import re
 
 codigo = Blueprint('codigo', __name__)
@@ -42,10 +43,9 @@ def create():
 
     if not matricula:
         return jsonify({'error': 'La matrícula no existe'}), 404
-    
-    # Validar que el URL comience con 'https://sqlfiddle.com/mysql/online-compiler?id='
-    url_prefix = 'https://sqlfiddle.com/mysql/online-compiler?id='
-    if not url_codigo or not url_codigo.startswith(url_prefix):
+
+    url_substring = 'sqlfiddle.com/mysql/online-compiler'
+    if url_substring not in url_codigo:
         return jsonify({'error': 'El URL del código no tiene un formato válido'}), 400
 
     # Validar que no exista un código para la misma evaluación y matrícula
@@ -54,18 +54,22 @@ def create():
         return jsonify({'error': 'Ya existe un código para esta evaluación y matrícula'}), 409
 
     # Validar que el curso relacionado tanto a la evaluación como a la matrícula sea el mismo
-    curso_evaluacion = evaluacion.id_curso
-    curso_matricula = matricula.id_curso
-
-    if curso_evaluacion != curso_matricula:
+    if evaluacion.id_curso != matricula.id_curso:
         return jsonify({'error': 'El curso asociado a la evaluación y la matrícula no coincide'}), 400
 
-    # Generar el código a partir de la URL (ajusta esto según tu lógica)
-    # Aquí solo se guarda la URL como ejemplo
-    codigo_generado = f"Código de: {url_codigo}"  # Ejemplo de cómo se podría generar el código
+    # Intentar extraer el código SQL usando Selenium
+    try:
+        codigo_sql = extract_sql_code_from_url(url_codigo)
+    except Exception as e:
+        return jsonify({'error': f'Error al extraer el código SQL: {str(e)}'}), 500
 
     # Crear el nuevo código
-    nuevo_codigo = Codigo(id_evaluacion=id_evaluacion, id_matricula=id_matricula, url_codigo=url_codigo, codigo=codigo_generado)
+    nuevo_codigo = Codigo(
+        id_evaluacion=id_evaluacion,
+        id_matricula=id_matricula,
+        url_codigo=url_codigo,
+        codigo_sql=codigo_sql  # Almacenar el código SQL extraído
+    )
 
     db.session.add(nuevo_codigo)
     db.session.commit()
