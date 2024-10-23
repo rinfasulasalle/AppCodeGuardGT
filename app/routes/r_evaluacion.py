@@ -56,9 +56,9 @@ def create_evaluacion():
         return jsonify({'error': 'El nombre de la evaluación es requerido y debe tener entre 1 y 100 caracteres'}), 400
 
     # Verificar si el nombre de la evaluación ya existe
-    if Evaluacion.query.filter_by(nombre=nombre).first():
+    '''if Evaluacion.query.filter_by(nombre=nombre).first():
         return jsonify({'error': 'Ya existe una evaluación con ese nombre'}), 409
-
+    '''
     # Crear nueva evaluación
     nueva_evaluacion = Evaluacion(id_curso=id_curso, nombre=nombre,descripcion= descripcion)
     db.session.add(nueva_evaluacion)
