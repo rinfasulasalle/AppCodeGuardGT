@@ -171,13 +171,15 @@ $(document).ready(function() {
 
     // Manejar el evento de envío del formulario de enlace
     $(document).on('submit', '.link-form', function(e) {
-      e.preventDefault();
-      const form = $(this);
-      const idCurso = form.data('id-curso');
-      const dniEstudiante = "{{ current_user.dni }}"; // DNI del usuario logueado
-      const linkInput = form.find('input');
-      const urlCodigo = linkInput.val(); // Capturar el URL del input
-      const idEvaluacion = form.closest('.evaluation-item').data('id-evaluacion'); // Capturar el id_evaluacion
+      e.preventDefault(); // Evitar la recarga de la página
+    const form = $(this);
+    const idCurso = form.data('id-curso');
+    const dniEstudiante = "{{ current_user.dni }}"; // DNI del usuario logueado
+    const linkInput = form.find('input');
+    const urlCodigo = linkInput.val(); // Capturar el URL del input
+    const idEvaluacion = form.closest('.evaluation-item').data('id-evaluacion'); // Capturar el id_evaluacion
+    const submitButton = form.find('button'); // Botón de enviar // Capturar el id_evaluacion
+      submitButton.prop('disabled', true).text('Enviando...');
 
       // Solicitar el ID de matrícula usando la ruta Flask
       $.ajax({
@@ -212,6 +214,7 @@ $(document).ready(function() {
             error: function(createErrorResponse) {
               // Mensaje de error (manejados en el backend)
               form.find('.message').html(`<div class="alert alert-danger">${createErrorResponse.responseJSON.error}</div>`);
+              submitButton.prop('disabled', false).text('Enviar');
             }
           });
 
