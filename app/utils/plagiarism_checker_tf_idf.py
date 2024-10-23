@@ -3,6 +3,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import re
 import json
 
+
 ### 1. PREPROCESAMIENTO DEL CÓDIGO SQL
 def preprocess_sql(code):
     """Elimina comentarios, convierte a minúsculas y tokeniza el código SQL."""
@@ -23,57 +24,70 @@ def calculate_cosine_similarity(tfidf_matrix):
     """Calcula la matriz de similitud de coseno entre los vectores TF-IDF."""
     return cosine_similarity(tfidf_matrix)
 
-### 4. DETECTAR PLAGIO CON UMBRAL
-def detect_plagiarism(sim_matrix, codes, threshold=0.8):
-    """Detecta plagio y prepara la salida en formato JSON."""
-    plagiarism_cases = []
-    n = len(codes)
+### 4. DETECTAR PLAGIO Y PREPARAR SALIDA JSON DETALLADA
+def detect_plagiarism(data, threshold=0.8):
+    """Detecta casos de plagio y devuelve una salida detallada en JSON."""
 
+    # Comprobar si hay datos suficientes
+    n = len(data)
+    if n == 0:
+        return json.dumps({"error": "No hay códigos para analizar."}, ensure_ascii=False)
+    elif n == 1:
+        return json.dumps({"warning": "Solo hay un código para analizar, no se puede comparar."}, ensure_ascii=False)
+
+    # Preprocesar los códigos SQL
+    codes = [preprocess_sql(item['codigo_sql']) for item in data]
+    tfidf_matrix = calculate_tfidf_matrix(codes)
+    sim_matrix = calculate_cosine_similarity(tfidf_matrix)
+
+    plagiarism_cases = []
+
+    # Detectar plagio comparando cada código con los demás
     for i in range(n):
         for j in range(i + 1, n):
             similarity = sim_matrix[i, j]
             if similarity >= threshold:
                 plagiarism_cases.append({
-                    "code_1_index": i,
-                    "code_2_index": j,
+                    "codigo_1": {
+                        "id_codigo": data[i]["id_codigo"],
+                        "estudiante": data[i]["estudiante"],
+                        "url_codigo": data[i]["url_codigo"]
+                    },
+                    "codigo_2": {
+                        "id_codigo": data[j]["id_codigo"],
+                        "estudiante": data[j]["estudiante"],
+                        "url_codigo": data[j]["url_codigo"]
+                    },
                     "similarity_score": round(similarity, 2)
                 })
 
+    # Formatear la salida en JSON
     result = {
-        "total_codes": n,
+        "total_codes_analyzed": n,
         "threshold": threshold,
         "plagiarism_detected": len(plagiarism_cases) > 0,
+        "plagiarism_cases": plagiarism_cases,
         "comparisons": [
             {
-                "code_1_index": i,
-                "code_2_index": j,
+                "codigo_1": {
+                    "id_codigo": data[i]["id_codigo"],
+                    "estudiante": data[i]["estudiante"],
+                    #"url_codigo": data[i]["url_codigo"]
+                },
+                "codigo_2": {
+                    "id_codigo": data[j]["id_codigo"],
+                    "estudiante": data[j]["estudiante"],
+                    #"url_codigo": data[j]["url_codigo"]
+                },
                 "similarity_score": round(sim_matrix[i, j], 2)
             }
             for i in range(n) for j in range(i + 1, n)
-        ],
-        "plagiarism_cases": plagiarism_cases
+        ]
     }
 
-    return json.dumps(result, indent=4)
+    return json.dumps(result, indent=4, ensure_ascii=False)
 
-### 5. FLUJO PRINCIPAL DEL PROGRAMA
-def plagiarism_checker(codes, threshold=0.8):
-    """Función principal para detectar plagio y devolver salida JSON."""
-    preprocessed_codes = [preprocess_sql(code) for code in codes]
-    tfidf_matrix = calculate_tfidf_matrix(preprocessed_codes)
-    sim_matrix = calculate_cosine_similarity(tfidf_matrix)
-    return detect_plagiarism(sim_matrix, codes, threshold)
-
-### EJEMPLO DE USO
-if __name__ == "__main__":
-    codes_sql = [
-        "SELECT id, nombre FROM clientes WHERE edad > 18;",
-        "SELECT id_cliente, nombre FROM usuarios WHERE edad > 18;",
-        "INSERT INTO clientes (id, nombre) VALUES (1, 'John');",
-        "SELECT * FROM clientes;",
-        "SELECT nombre FROM usuarios WHERE edad >= 18;",
-        "SELECT id, nombre FROM clientes WHERE edad > 18;"
-    ]
-
-    json_result = plagiarism_checker(codes_sql, threshold=0.8)
-    print(json_result)
+### 5. FUNCIÓN PRINCIPAL
+def plagiarism_checker(datos, threshold=0.8):
+    """Función principal para verificar plagio y retornar el resultado en JSON."""
+    return detect_plagiarism(datos, threshold)
