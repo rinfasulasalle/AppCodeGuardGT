@@ -60,9 +60,12 @@ def create():
     if curso_evaluacion != curso_matricula:
         return jsonify({'error': 'El curso asociado a la evaluación y la matrícula no coincide'}), 400
 
+    # Generar el código a partir de la URL (ajusta esto según tu lógica)
+    # Aquí solo se guarda la URL como ejemplo
+    codigo_generado = f"Código de: {url_codigo}"  # Ejemplo de cómo se podría generar el código
 
     # Crear el nuevo código
-    nuevo_codigo = Codigo(id_evaluacion=id_evaluacion, id_matricula=id_matricula, url_codigo=url_codigo)
+    nuevo_codigo = Codigo(id_evaluacion=id_evaluacion, id_matricula=id_matricula, url_codigo=url_codigo, codigo=codigo_generado)
 
     db.session.add(nuevo_codigo)
     db.session.commit()
