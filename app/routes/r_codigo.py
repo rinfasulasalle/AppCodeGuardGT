@@ -3,6 +3,8 @@ from models.codigo import Codigo
 from models.evaluacion import Evaluacion
 from models.matricula import Matricula
 from models.curso import Curso
+from models.estudiante import   Estudiante
+from models.usuario import Usuario
 from utils.db import db
 from utils.error_handler import handle_errors
 from utils.selenium_util import extract_sql_code_from_url
@@ -89,3 +91,44 @@ def delete(id_codigo):
     db.session.commit()
 
     return jsonify({'message': 'Código eliminado exitosamente', 'id_codigo': id_codigo}), 200
+
+# Lista codigos entregados por evaluacion
+@codigo.route("/get_by_evaluacion/<int:id_evaluacion>", methods=['GET'])
+@handle_errors
+def get_by_evaluacion(id_evaluacion):
+    # Obtener los códigos con JOIN a las tablas relacionadas
+    codigos = (
+        db.session.query(
+            Codigo.id_codigo,
+            Codigo.url_codigo,
+            Codigo.codigo_sql,
+            Usuario.dni,
+            Usuario.nombres,
+            Usuario.apellidos
+        )
+        .join(Matricula, Codigo.id_matricula == Matricula.id_matricula)
+        .join(Usuario, Matricula.dni_estudiante == Usuario.dni)
+        .filter(Codigo.id_evaluacion == id_evaluacion)
+        .all()
+    )
+
+    # Verificar si existen códigos
+    if not codigos:
+        return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
+
+    # Formatear la respuesta en un solo paso
+    codigos_list = [
+        {
+            'id_codigo': codigo.id_codigo,
+            'url_codigo': codigo.url_codigo,
+            'codigo_sql': codigo.codigo_sql,
+            'estudiante': {
+                'dni': codigo.dni,
+                'nombres': codigo.nombres,
+                'apellidos': codigo.apellidos
+            }
+        }
+        for codigo in codigos
+    ]
+
+    return jsonify(codigos_list), 200
