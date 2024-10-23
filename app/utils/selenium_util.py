@@ -49,7 +49,7 @@ def extract_sql_code_from_url(url: str) -> str:
                 raise ValueError("La URL proporcionada no es válida.")
 
             # Esperar que el textarea con ID 'uiP2' esté presente
-            textarea = WebDriverWait(driver, 15).until(
+            textarea = WebDriverWait(driver, 5).until(
                 EC.presence_of_element_located((By.ID, "uiP2"))
             )
 
@@ -60,7 +60,7 @@ def extract_sql_code_from_url(url: str) -> str:
                 raise ValueError("El textarea está vacío.")
 
             return sql_code
-
+ 
     except TimeoutException:
         raise TimeoutException("El textarea no apareció a tiempo.")
     except NoSuchElementException:
