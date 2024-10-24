@@ -2,8 +2,12 @@ from flask import Blueprint, jsonify, request
 from models.evaluacion import Evaluacion
 from models.curso import Curso
 from models.docente import Docente
+from models.codigo import  Codigo
+from models.usuario import Usuario
+from models.matricula import Matricula
 from utils.db import db
 from utils.error_handler import handle_errors
+from utils.plagiarism_checker_tf_idf import plagiarism_checker
 
 evaluacion = Blueprint('evaluacion', __name__)
 
@@ -178,3 +182,48 @@ def get_evaluaciones_by_docente(dni_docente):
         response['cursos'].append(curso_info)
 
     return jsonify(response), 200
+
+# Ruta para realizar revisión por id_evaluacion
+# Ruta para realizar revisión por id_evaluacion
+@evaluacion.route("/make_review/<int:id_evaluacion>", methods=['POST'])
+@handle_errors
+def make_review(id_evaluacion):
+    # Obtener los códigos entregados por la evaluación
+    codigos = (
+        db.session.query(
+            Codigo.id_codigo,
+            Codigo.url_codigo,
+            Codigo.codigo_sql,
+            Usuario.dni,
+            Usuario.nombres,
+            Usuario.apellidos
+        )
+        .join(Matricula, Codigo.id_matricula == Matricula.id_matricula)
+        .join(Usuario, Matricula.dni_estudiante == Usuario.dni)
+        .filter(Codigo.id_evaluacion == id_evaluacion)
+        .all()
+    )
+
+    # Verificar si existen códigos
+    if not codigos:
+        return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
+
+    # Formatear los datos para el verificador de plagio
+    datos = [
+        {
+            'id_codigo': codigo.id_codigo,
+            'url_codigo': codigo.url_codigo,
+            'codigo_sql': codigo.codigo_sql,
+            'estudiante': {
+                'dni': codigo.dni,
+                'nombres': codigo.nombres,
+                'apellidos': codigo.apellidos
+            }
+        }
+        for codigo in codigos
+    ]
+
+    # Verificar el plagio
+    json_result = plagiarism_checker(datos, 0.8)
+
+    return jsonify(json_result), 200

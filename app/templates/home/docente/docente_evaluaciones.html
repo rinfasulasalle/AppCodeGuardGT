@@ -101,12 +101,22 @@
 
         // Añadir evento a los botones "Realizar Revisión"
         $('.realizar-evaluacion-btn').click(function () {
-          const id = $(this).data('id');
+          const id = parseInt($(this).data('id'), 10); // Lo parseo a entero
           const nombre = $(this).data('nombre');
           const descripcion = $(this).data('descripcion');
 
-          alert(`Datos de la Evaluación:\n\nID: ${id}\nNombre: ${nombre}\nDescripción: ${descripcion}`);
-        });
+          alert(`Datos de la Evaluación:\n\nID: ${id}\nNombre: ${nombre}\nDescripción: ${descripcion}\n${typeof(id)}`);
+          const url = `/evaluacion/make_review/${id}`; // URL de la API
+          $.post(url)
+            .done(function(data) {
+              // Si la solicitud fue exitosa, se registra la respuesta en la consola.
+              alert(data);
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+              // Si la solicitud falla, se muestra un alert con el mensaje de error.
+              alert("Error en la solicitud: " + textStatus + " - " + errorThrown);
+            });
+          });
       }).fail(function () {
         $('#evaluaciones-list').html('<p class="text-danger">Error al cargar las evaluaciones.</p>');
       });
