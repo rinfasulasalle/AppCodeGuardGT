@@ -48,12 +48,12 @@ def detect_plagiarism(data, threshold=0.8):
             similarity = sim_matrix[i, j]
             if similarity >= threshold:
                 plagiarism_cases.append({
-                    "codigo_1": {
+                    "codigo_a": {
                         "id_codigo": data[i]["id_codigo"],
                         "estudiante": data[i]["estudiante"],
                         "url_codigo": data[i]["url_codigo"]
                     },
-                    "codigo_2": {
+                    "codigo_b": {
                         "id_codigo": data[j]["id_codigo"],
                         "estudiante": data[j]["estudiante"],
                         "url_codigo": data[j]["url_codigo"]
@@ -69,12 +69,12 @@ def detect_plagiarism(data, threshold=0.8):
         "plagiarism_cases": plagiarism_cases,
         "comparisons": [
             {
-                "codigo_1": {
+                "codigo_a": {
                     "id_codigo": data[i]["id_codigo"],
                     "estudiante": data[i]["estudiante"],
                     #"url_codigo": data[i]["url_codigo"]
                 },
-                "codigo_2": {
+                "codigo_b": {
                     "id_codigo": data[j]["id_codigo"],
                     "estudiante": data[j]["estudiante"],
                     #"url_codigo": data[j]["url_codigo"]
