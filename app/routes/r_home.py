@@ -44,7 +44,16 @@ def get_gestion_roles():
     if current_user.role == 'Administracion':
         return render_template('home/admin/gestion_roles.html')
     return check_access('Administracion')
+@home.route('/gestion_cursos')
+@login_required
+def get_gestion_cursos():
+    if current_user.role == 'Administracion':
+        return render_template('home/admin/gestion_cursos.html')
+    return check_access('Administracion')
 
+
+
+# ----------------------------------
 # Para estudiantes
 @home.route('/mis_cursos')
 @login_required

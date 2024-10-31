@@ -77,6 +77,18 @@
               <p>Gestión de Roles</p>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="{{ url_for('home.get_gestion_cursos') }}" class="nav-link {% if 'index.html' in segment %} active {% endif %}">
+              <i class="far fa-circle nav-icon"></i>
+              <p>Gestión de Cursos</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link {% if 'index.html' in segment %} active {% endif %}">
+              <i class="far fa-circle nav-icon"></i>
+              <p>Gestión Docentes/Cursos</p>
+            </a>
+          </li>
         </ul>
       </li>
       <li class="nav-item">

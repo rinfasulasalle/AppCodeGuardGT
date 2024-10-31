@@ -1,0 +1,143 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Gestión de Cursos{% endblock %}
+
+{% block body_class %} sidebar-mini pace-primary {% endblock body_class %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="/static/assets/plugins/pace-progress/themes/black/pace-theme-flat-top.css">
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Cursos</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Cursos</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Lista de Cursos</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID Curso</th>
+                                <th>DNI Docente</th>
+                                <th>Nombre del Curso</th>
+                            </tr>
+                        </thead>
+                        <tbody id="course-list">
+                            <tr>
+                                <td colspan="3">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para registrar cursos -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Registrar Curso y Asignar Docente</h3>
+            </div>
+            <div class="card-body">
+                <form id="courseForm">
+                    <div class="mb-3">
+                        <label for="nombre">Nombre del Curso:</label>
+                        <input type="text" class="form-control" id="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dni_docente">DNI del Docente:</label>
+                        <input type="number" class="form-control" id="dni_docente" required>
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">Crear Curso</button>
+                    </div>
+                </form>
+                <div id="courseResponse"></div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/plugins/pace-progress/pace.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Cargar la lista de cursos al cargar la página
+        loadCourses();
+
+        // Enviar el formulario para crear un nuevo curso
+        $('#courseForm').on('submit', function(event) {
+            event.preventDefault();
+
+            const dni_docente = $('#dni_docente').val();
+            const nombre = $('#nombre').val();
+
+            // Realizar la solicitud POST para crear un curso
+            $.ajax({
+                url: '{{ url_for("curso.create") }}',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ dni_docente: dni_docente, nombre: nombre }),
+                success: function(response) {
+                    $('#courseResponse').html(`
+                        <div class="alert alert-success">
+                            ${response.message}<br>
+                            Curso creado: ${response.curso.nombre} (ID: ${response.curso.id_curso})
+                        </div>
+                    `);
+                    $('#courseForm')[0].reset();
+                    loadCourses();
+                },
+                error: function(xhr) {
+                    const error = xhr.responseJSON ? xhr.responseJSON.error : 'Error desconocido';
+                    $('#courseResponse').html(`<div class="alert alert-danger">${error}</div>`);
+                }
+            });
+        });
+
+        function loadCourses() {
+            // Realizar la solicitud GET para cargar los cursos
+            $.get('{{ url_for("curso.get_all") }}', function(data) {
+                $('#course-list').empty();
+                $.each(data, function(index, curso) {
+                    $('#course-list').append(
+                        `<tr>
+                            <td>${curso.id_curso}</td>
+                            <td>${curso.dni_docente}</td>
+                            <td>${curso.nombre}</td>
+                        </tr>`
+                    );
+                });
+            }).fail(function() {
+                $('#course-list').html('<tr><td colspan="3">Error al cargar los datos.</td></tr>');
+            });
+        }
+    });
+</script>
+{% endblock javascripts %}
