@@ -53,7 +53,8 @@ def create():
     # Validar que no exista un código para la misma evaluación y matrícula
     codigo_existente = Codigo.query.filter_by(id_evaluacion=id_evaluacion, id_matricula=id_matricula).first()
     if codigo_existente:
-        return jsonify({'error': 'Ya existe un código para esta evaluación y matrícula'}), 409
+        return jsonify({'error': 'URL ya enviado en esta evaluación'}), 409
+        #return jsonify({'error': 'Ya existe un código para esta evaluación y matrícula'}), 409
 
     # Validar que el curso relacionado tanto a la evaluación como a la matrícula sea el mismo
     if evaluacion.id_curso != matricula.id_curso:

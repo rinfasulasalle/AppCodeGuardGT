@@ -65,7 +65,7 @@ def create():
     # Validar el formato del número de teléfono
     telefono = data['telefono'].replace(" ", "")
     if not validar_telefono(telefono):
-        return jsonify({'error': 'El formato del número de teléfono es inválido. Debe ser: +código_de_país número.'}), 400
+        return jsonify({'error': 'El formato del número de teléfono es inválido. Debe ser: "+código_de_país número"'}), 400
     
     # Limpiar el número de teléfono (eliminar espacios)
     telefono_limpio = telefono.replace(" ", "")
@@ -192,6 +192,10 @@ def change_password(dni):
     if not old_password or not new_password:
         return jsonify({'error': 'La contraseña antigua y la nueva son requeridas'}), 400
 
+    # Validar que la nueva contraseña tenga al menos 8 caracteres sin espacios
+    if len(new_password.strip()) < 8:
+        return jsonify({'error': 'La nueva contraseña debe tener al menos 8 caracteres sin contar espacios'}), 400
+
     # Verificar si la contraseña antigua es correcta
     if not verificar_contrasena(old_password, usuario.contrasena):
         return jsonify({'error': 'La contraseña antigua no es correcta'}), 400
@@ -204,7 +208,9 @@ def change_password(dni):
     db.session.commit()
 
     return jsonify({'message': 'Contraseña actualizada exitosamente'}), 200
+
 # --------------------------------------------------------
+
 @usuarios.route("/change_pass/<dni>", methods=['POST'])
 @handle_errors
 def change_passs(dni):
@@ -221,6 +227,10 @@ def change_passs(dni):
     if not new_password:
         return jsonify({'error': 'La nueva contraseña es requerida'}), 400
 
+    # Validar que la nueva contraseña tenga al menos 8 caracteres sin espacios
+    if len(new_password.strip()) < 8:
+        return jsonify({'error': 'La nueva contraseña debe tener al menos 8 caracteres sin contar espacios'}), 400
+
     # Hashear la nueva contraseña
     nueva_contrasena_hash = hash_contrasena(new_password)
 
@@ -229,6 +239,7 @@ def change_passs(dni):
     db.session.commit()
 
     return jsonify({'message': 'Contraseña actualizada exitosamente'}), 200
+
 
 @usuarios.route("/count", methods=['GET'])
 @handle_errors
