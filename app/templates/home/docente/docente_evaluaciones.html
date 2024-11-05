@@ -129,11 +129,11 @@
 
       const url = `/evaluacion/make_review/${id}`; // URL de la API
       $.post(url)
-        .done(function(data) {
+        .done(function(data_revision) {
           // Asumiendo que 'data' es el resultado de la revisión
           const fechaHora = new Date().toLocaleString("es-PE", { timeZone: "America/Lima" });
           $('#fechaHora').text(fechaHora);
-          $('#resultadoRevisión').html(`<strong>Evaluación:</strong> ${nombre}<br><strong>Descripción:</strong> ${descripcion}<br><strong>Resultado:</strong> ${data}`);
+          $('#resultadoRevisión').html(`<strong>Evaluación:</strong> ${nombre}<br><strong>Descripción:</strong> ${descripcion}<br><strong>Resultado:</strong> ${data_revision}`);
           $('#resultadoModal').modal('show'); // Mostrar el modal
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
@@ -144,6 +144,5 @@
     $('#evaluaciones-list').html('<p class="text-danger">Error al cargar las evaluaciones.</p>');
   });
 });
-
   </script>
 {% endblock javascripts %}
