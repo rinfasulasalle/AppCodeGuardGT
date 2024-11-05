@@ -49,6 +49,28 @@
       </div>
     </section>
   </div>
+  <!-- Modal para mostrar el resultado de la revisión -->
+  <div class="modal fade" id="resultadoModal" tabindex="-1" role="dialog" aria-labelledby="resultadoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="resultadoModalLabel">Resultado de la Revisión</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <h6>Fecha y Hora (Perú): <span id="fechaHora"></span></h6>
+          <h6>IP Ficticia: <span id="ipFicticia">192.168.1.1</span></h6>
+          <p id="resultadoRevisión"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% endblock content %}
 
 {% block javascripts %}
@@ -59,67 +81,69 @@
 
   <script>
     $(document).ready(function () {
-      const dni_docente = "{{ current_user.dni }}"; // DNI del usuario logueado
-      const api_url = `/evaluacion/get_evaluaciones_by_docente/${dni_docente}`; // URL de la API
+  const dni_docente = "{{ current_user.dni }}"; // DNI del usuario logueado
+  const api_url = `/evaluacion/get_evaluaciones_by_docente/${dni_docente}`; // URL de la API
 
-      // Obtener los datos de evaluaciones
-      $.get(api_url, function (data) {
-        let evaluacionesHTML = '';
+  // Obtener los datos de evaluaciones
+  $.get(api_url, function (data) {
+    let evaluacionesHTML = '';
 
-        data.cursos.forEach(curso => {
-          evaluacionesHTML += `
-            <div class="col-md-6 mb-4">
-              <div class="card border-info">
-                <div class="card-header bg-info text-white">
-                  <h5 class="card-title"><i class="fas fa-book"></i> ${curso.curso.nombre} (ID: ${curso.curso.id_curso})</h5>
-                </div>
-                <div class="card-body">
-                  <h6 class="card-subtitle mb-2 text-muted">Evaluaciones:</h6>
-                  <ul class="list-group">
-                    ${curso.evaluaciones.length > 0
-                      ? curso.evaluaciones.map(evaluacion => `
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                          <span><i class="fas fa-pencil-alt"></i> <strong>${evaluacion.nombre}</strong></span>
-                          <button class="btn btn-sm btn-primary realizar-evaluacion-btn" 
-                                  data-id="${evaluacion.id_evaluacion}" 
-                                  data-nombre="${evaluacion.nombre}" 
-                                  data-descripcion="${evaluacion.descripcion}">
-                            Realizar Revisión
-                          </button>
-                        </li>
-                      `).join('')
-                      : '<li class="list-group-item text-danger">No hay evaluaciones para este curso.</li>'
-                    }
-                  </ul>
-                </div>
-              </div>
+    data.cursos.forEach(curso => {
+      evaluacionesHTML += `
+        <div class="col-md-6 mb-4">
+          <div class="card border-info">
+            <div class="card-header bg-info text-white">
+              <h5 class="card-title"><i class="fas fa-book"></i> ${curso.curso.nombre} (ID: ${curso.curso.id_curso})</h5>
             </div>
-          `;
-        });
-
-        $('#evaluaciones-list').html(evaluacionesHTML);
-
-        // Añadir evento a los botones "Realizar Revisión"
-        $('.realizar-evaluacion-btn').click(function () {
-          const id = parseInt($(this).data('id'), 10); // Lo parseo a entero
-          const nombre = $(this).data('nombre');
-          const descripcion = $(this).data('descripcion');
-
-          alert(`Datos de la Evaluación:\n\nID: ${id}\nNombre: ${nombre}\nDescripción: ${descripcion}\n${typeof(id)}`);
-          const url = `/evaluacion/make_review/${id}`; // URL de la API
-          $.post(url)
-            .done(function(data) {
-              // Si la solicitud fue exitosa, se registra la respuesta en la consola.
-              alert(data);
-            })
-            .fail(function(jqXHR, textStatus, errorThrown) {
-              // Si la solicitud falla, se muestra un alert con el mensaje de error.
-              alert("Error en la solicitud: " + textStatus + " - " + errorThrown);
-            });
-          });
-      }).fail(function () {
-        $('#evaluaciones-list').html('<p class="text-danger">Error al cargar las evaluaciones.</p>');
-      });
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">Evaluaciones:</h6>
+              <ul class="list-group">
+                ${curso.evaluaciones.length > 0
+                  ? curso.evaluaciones.map(evaluacion => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <span><i class="fas fa-pencil-alt"></i> <strong>${evaluacion.nombre}</strong></span>
+                      <button class="btn btn-sm btn-primary realizar-evaluacion-btn" 
+                              data-id="${evaluacion.id_evaluacion}" 
+                              data-nombre="${evaluacion.nombre}" 
+                              data-descripcion="${evaluacion.descripcion}">
+                        Realizar Revisión
+                      </button>
+                    </li>
+                  `).join('')
+                  : '<li class="list-group-item text-danger">No hay evaluaciones para este curso.</li>'
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
     });
+
+    $('#evaluaciones-list').html(evaluacionesHTML);
+
+    // Añadir evento a los botones "Realizar Revisión"
+    $('.realizar-evaluacion-btn').click(function () {
+      const id = parseInt($(this).data('id'), 10); // Lo parseo a entero
+      const nombre = $(this).data('nombre');
+      const descripcion = $(this).data('descripcion');
+
+      const url = `/evaluacion/make_review/${id}`; // URL de la API
+      $.post(url)
+        .done(function(data) {
+          // Asumiendo que 'data' es el resultado de la revisión
+          const fechaHora = new Date().toLocaleString("es-PE", { timeZone: "America/Lima" });
+          $('#fechaHora').text(fechaHora);
+          $('#resultadoRevisión').html(`<strong>Evaluación:</strong> ${nombre}<br><strong>Descripción:</strong> ${descripcion}<br><strong>Resultado:</strong> ${data}`);
+          $('#resultadoModal').modal('show'); // Mostrar el modal
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+          alert("Error en la solicitud: " + textStatus + " - " + errorThrown);
+        });
+    });
+  }).fail(function () {
+    $('#evaluaciones-list').html('<p class="text-danger">Error al cargar las evaluaciones.</p>');
+  });
+});
+
   </script>
 {% endblock javascripts %}
