@@ -184,7 +184,6 @@ def get_evaluaciones_by_docente(dni_docente):
     return jsonify(response), 200
 
 # Ruta para realizar revisión por id_evaluacion
-# Ruta para realizar revisión por id_evaluacion
 @evaluacion.route("/make_review/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
 def make_review(id_evaluacion):
