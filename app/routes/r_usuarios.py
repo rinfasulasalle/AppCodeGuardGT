@@ -175,7 +175,6 @@ def delete(dni):
     db.session.commit()
 
     return jsonify({'message': 'Usuario eliminado exitosamente', 'usuario': usuario.dni}), 200
-
 @usuarios.route("/change_password/<dni>", methods=['POST'])
 @handle_errors
 def change_password(dni):
@@ -192,9 +191,14 @@ def change_password(dni):
     if not old_password or not new_password:
         return jsonify({'error': 'La contraseña antigua y la nueva son requeridas'}), 400
 
-    # Validar que la nueva contraseña tenga al menos 8 caracteres sin espacios
-    if len(new_password.strip()) < 8:
-        return jsonify({'error': 'La nueva contraseña debe tener al menos 8 caracteres sin contar espacios'}), 400
+    # Validar que la nueva contraseña no tenga espacios en blanco
+    espacios_blanco = new_password.count(" ")
+    if espacios_blanco > 0:
+        return jsonify({'error': f'La nueva contraseña no debe contener espacios en blanco. Encontrados: {espacios_blanco}'}), 400
+
+    # Validar que la nueva contraseña tenga al menos 8 caracteres
+    if len(new_password) < 8:
+        return jsonify({'error': 'La nueva contraseña debe tener al menos 8 caracteres'}), 400
 
     # Verificar si la contraseña antigua es correcta
     if not verificar_contrasena(old_password, usuario.contrasena):
@@ -209,7 +213,6 @@ def change_password(dni):
 
     return jsonify({'message': 'Contraseña actualizada exitosamente'}), 200
 
-# --------------------------------------------------------
 
 @usuarios.route("/change_pass/<dni>", methods=['POST'])
 @handle_errors
@@ -227,9 +230,14 @@ def change_passs(dni):
     if not new_password:
         return jsonify({'error': 'La nueva contraseña es requerida'}), 400
 
-    # Validar que la nueva contraseña tenga al menos 8 caracteres sin espacios
-    if len(new_password.strip()) < 8:
-        return jsonify({'error': 'La nueva contraseña debe tener al menos 8 caracteres sin contar espacios'}), 400
+    # Validar que la nueva contraseña no tenga espacios en blanco
+    espacios_blanco = new_password.count(" ")
+    if espacios_blanco > 0:
+        return jsonify({'error': f'La nueva contraseña no debe contener espacios en blanco. Encontrados: {espacios_blanco}'}), 400
+
+    # Validar que la nueva contraseña tenga al menos 8 caracteres
+    if len(new_password) < 8:
+        return jsonify({'error': 'La nueva contraseña debe tener al menos 8 caracteres'}), 400
 
     # Hashear la nueva contraseña
     nueva_contrasena_hash = hash_contrasena(new_password)
@@ -239,7 +247,6 @@ def change_passs(dni):
     db.session.commit()
 
     return jsonify({'message': 'Contraseña actualizada exitosamente'}), 200
-
 
 @usuarios.route("/count", methods=['GET'])
 @handle_errors
