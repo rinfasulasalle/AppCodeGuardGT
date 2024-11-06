@@ -77,26 +77,26 @@
               </div>
               <div class="card-body">
                 <form id="updatePasswordForm">
-                    <div class="form-group">
-                        <label for="oldPassword"><i class="fas fa-lock mr-1"></i> Antigua Contraseña</label>
-                        <div class="input-group">
-                          <input type="password" class="form-control" id="old_password" name="old_password" placeholder="Ingrese su antigua contraseña" required>
-                          <span class="input-group-text" id="toggleOldPassword" style="cursor: pointer;">
-                            <i class="fas fa-eye" id="oldPasswordEye"></i>
-                          </span>
-                        </div>
+                  <div class="form-group">
+                      <label for="oldPassword"><i class="fas fa-lock mr-1"></i> Antigua Contraseña</label>
+                      <div class="input-group">
+                        <input type="password" class="form-control" id="old_password" name="old_password" placeholder="Ingrese su antigua contraseña" required maxlength="16">
+                        <span class="input-group-text" id="toggleOldPassword" style="cursor: pointer;">
+                          <i class="fas fa-eye" id="oldPasswordEye"></i>
+                        </span>
                       </div>
-                      <div class="form-group">
-                        <label for="newPassword"><i class="fas fa-lock mr-1"></i> Nueva Contraseña</label>
-                        <div class="input-group">
-                          <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Ingrese su nueva contraseña" required>
-                          <span class="input-group-text" id="toggleNewPassword" style="cursor: pointer;">
-                            <i class="fas fa-eye" id="newPasswordEye"></i>
-                          </span>
-                        </div>
+                  </div>
+                  <div class="form-group">
+                      <label for="newPassword"><i class="fas fa-lock mr-1"></i> Nueva Contraseña</label>
+                      <div class="input-group">
+                        <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Ingrese su nueva contraseña" required maxlength="16">
+                        <span class="input-group-text" id="toggleNewPassword" style="cursor: pointer;">
+                          <i class="fas fa-eye" id="newPasswordEye"></i>
+                        </span>
                       </div>
-                    <button type="submit" class="btn btn-danger btn-block">Actualizar Contraseña</button>
-                    <div id="responseMessage" style="display: none; margin-top: 10px; padding: 10px; border-radius: 5px;"></div>
+                  </div>
+                  <button type="submit" class="btn btn-danger btn-block">Actualizar Contraseña</button>
+                  <div id="responseMessage" style="display: none; margin-top: 10px; padding: 10px; border-radius: 5px;"></div>
                 </form>
               </div>
             </div>
