@@ -48,7 +48,7 @@ def create():
 
     # Validar nombre del curso
     if not nombre or not isinstance(nombre, str) or len(nombre) < 1 or len(nombre) > 100:
-        return jsonify({'error': 'El nombre del curso es requerido y debe tener entre 1 y 100 caracteres'}), 400
+        return jsonify({'error': 'El nombre del curso es requerido y debe tener entre 1 y 100 caracteres(solo caracteres  o números)'}), 400
 
     # Verificar si el curso ya existe
     if Curso.query.filter_by(nombre=nombre).first():
