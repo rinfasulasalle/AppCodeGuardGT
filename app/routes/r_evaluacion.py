@@ -222,7 +222,10 @@ def make_review(id_evaluacion):
         for codigo in codigos
     ]
 
-    # Verificar el plagio
-    json_result = plagiarism_checker(datos, 0.8)
+    # Obtener el threshold del JSON en la solicitud
+    threshold = request.json.get('threshold', 0.8)  # Usa 0.8 como valor por defecto si no se envía threshold
+
+    # Verificar el plagio con el threshold proporcionado
+    json_result = plagiarism_checker(datos, threshold)
 
     return jsonify(json_result), 200

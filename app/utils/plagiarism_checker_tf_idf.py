@@ -33,7 +33,7 @@ def detect_plagiarism(data, threshold=0.8):
     if n == 0:
         return json.dumps({"error": "No hay códigos para analizar."}, ensure_ascii=False)
     elif n == 1:
-        return json.dumps({"warning": "Solo hay un código para analizar, no se puede comparar."}, ensure_ascii=False)
+        return json.dumps({"Solo hay un código para analizar, no se puede comparar."}, ensure_ascii=False)
 
     # Preprocesar los códigos SQL
     codes = [preprocess_sql(item['codigo_sql']) for item in data]

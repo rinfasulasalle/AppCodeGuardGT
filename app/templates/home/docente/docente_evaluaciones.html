@@ -10,139 +10,205 @@
 {% endblock stylesheets %}
 
 {% block content %}
-  <div class="content-wrapper">
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1 class="text-primary">Gestión de Evaluaciones</h1>
-          </div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Inicio</a></li>
-              <li class="breadcrumb-item active">Gestión de Evaluaciones</li>
-            </ol>
-          </div>
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="text-primary">Gestión de Evaluaciones</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+            <li class="breadcrumb-item active">Gestión de Evaluaciones</li>
+          </ol>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="card">
-              <div class="card-header bg-info">
-                <h3 class="card-title text-white"><i class="fas fa-check-circle"></i> Evaluaciones por Curso</h3>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header bg-info">
+              <h3 class="card-title text-white"><i class="fas fa-check-circle"></i> Evaluaciones por Curso</h3>
+            </div>
+            <div class="card-body">
+              <div id="evaluaciones-list" class="row">
+                <!-- Cursos y evaluaciones se insertarán dinámicamente aquí -->
               </div>
-              <div class="card-body">
-                <div id="evaluaciones-list" class="row">
-                  <!-- Cursos y evaluaciones se insertarán dinámicamente aquí -->
-                </div>
-              </div>
-              <div class="card-footer bg-light">
-                <p class="text-center">Gestión de Evaluaciones - © 2024</p>
-              </div>
+            </div>
+            <div class="card-footer bg-light">
+              <p class="text-center">Gestión de Evaluaciones - © 2024</p>
             </div>
           </div>
         </div>
       </div>
-    </section>
-  </div>
-  <!-- Modal para mostrar el resultado de la revisión -->
-  <div class="modal fade" id="resultadoModal" tabindex="-1" role="dialog" aria-labelledby="resultadoModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="resultadoModalLabel">Resultado de la Revisión</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <h6>Fecha y Hora (Perú): <span id="fechaHora"></span></h6>
-          <h6>IP Ficticia: <span id="ipFicticia">192.168.1.1</span></h6>
-          <p id="resultadoRevisión"></p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-        </div>
+    </div>
+  </section>
+</div>
+
+<!-- Modal para selección de método de revisión -->
+<div class="modal fade" id="metodoRevisionModal" tabindex="-1" role="dialog" aria-labelledby="metodoRevisionModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="metodoRevisionModalLabel">Seleccionar Método de Revisión</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="metodoRevisionForm">
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="metodoRevision" id="tdidf" value="tdidf" checked>
+            <label class="form-check-label" for="tdidf">Realizar revisión mediante algoritmo TD IDF</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="metodoRevision" id="gemini" value="gemini">
+            <label class="form-check-label" for="gemini">Realizar revisión con asistencia de IA Gemini</label>
+          </div>
+
+          <!-- Slider para configurar el threshold -->
+          <div class="mt-4">
+            <label for="thresholdSlider" class="form-label">Configurar Threshold (0 a 1): <span id="thresholdValue">0.5</span></label>
+            <input type="range" class="form-range" id="thresholdSlider" min="0" max="1" step="0.01" value="0.5">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="confirmarRevision">Confirmar</button>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Modal para mostrar el resultado -->
+<div class="modal fade" id="resultadoModal" tabindex="-1" role="dialog" aria-labelledby="resultadoModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="resultadoModalLabel">Resultado de la Revisión</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Fecha y Hora:</strong> <span id="fechaHora"></span></p>
+        <p id="resultadoRevisión"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock content %}
 
 {% block javascripts %}
-  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
-  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="/static/assets/plugins/pace-progress/pace.min.js"></script>
-  <script src="/static/assets/js/adminlte.min.js"></script>
+<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/plugins/pace-progress/pace.min.js"></script>
+<script src="/static/assets/js/adminlte.min.js"></script>
 
-  <script>
-    $(document).ready(function () {
-  const dni_docente = "{{ current_user.dni }}"; // DNI del usuario logueado
-  const api_url = `/evaluacion/get_evaluaciones_by_docente/${dni_docente}`; // URL de la API
-
-  // Obtener los datos de evaluaciones
-  $.get(api_url, function (data) {
-    let evaluacionesHTML = '';
-
-    data.cursos.forEach(curso => {
-      evaluacionesHTML += `
-        <div class="col-md-6 mb-4">
-          <div class="card border-info">
-            <div class="card-header bg-info text-white">
-              <h5 class="card-title"><i class="fas fa-book"></i> ${curso.curso.nombre} (ID: ${curso.curso.id_curso})</h5>
-            </div>
-            <div class="card-body">
-              <h6 class="card-subtitle mb-2 text-muted">Evaluaciones:</h6>
-              <ul class="list-group">
-                ${curso.evaluaciones.length > 0
-                  ? curso.evaluaciones.map(evaluacion => `
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                      <span><i class="fas fa-pencil-alt"></i> <strong>${evaluacion.nombre}</strong></span>
-                      <button class="btn btn-sm btn-primary realizar-evaluacion-btn" 
-                              data-id="${evaluacion.id_evaluacion}" 
-                              data-nombre="${evaluacion.nombre}" 
-                              data-descripcion="${evaluacion.descripcion}">
-                        Realizar Revisión
-                      </button>
-                    </li>
-                  `).join('')
-                  : '<li class="list-group-item text-danger">No hay evaluaciones para este curso.</li>'
-                }
-              </ul>
+<script>
+  $(document).ready(function () {
+    const dni_docente = "{{ current_user.dni }}";
+    const api_url = `/evaluacion/get_evaluaciones_by_docente/${dni_docente}`;
+  
+    $.get(api_url, function (data) {
+      let evaluacionesHTML = '';
+  
+      data.cursos.forEach(curso => {
+        evaluacionesHTML += `
+          <div class="col-md-6 mb-4">
+            <div class="card border-info">
+              <div class="card-header bg-info text-white">
+                <h5 class="card-title"><i class="fas fa-book"></i> ${curso.curso.nombre} (ID: ${curso.curso.id_curso})</h5>
+              </div>
+              <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Evaluaciones:</h6>
+                <ul class="list-group">
+                  ${curso.evaluaciones.length > 0
+                    ? curso.evaluaciones.map(evaluacion => `
+                      <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-pencil-alt"></i> <strong>${evaluacion.nombre}</strong></span>
+                        <button class="btn btn-sm btn-primary realizar-evaluacion-btn" 
+                                data-id="${evaluacion.id_evaluacion}" 
+                                data-nombre="${evaluacion.nombre}" 
+                                data-descripcion="${evaluacion.descripcion}">
+                          Realizar Revisión
+                        </button>
+                      </li>
+                    `).join('')
+                    : '<li class="list-group-item text-danger">No hay evaluaciones para este curso.</li>'
+                  }
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
-      `;
-    });
-
-    $('#evaluaciones-list').html(evaluacionesHTML);
-
-    // Añadir evento a los botones "Realizar Revisión"
-    $('.realizar-evaluacion-btn').click(function () {
-      const id = parseInt($(this).data('id'), 10); // Lo parseo a entero
-      const nombre = $(this).data('nombre');
-      const descripcion = $(this).data('descripcion');
-
-      const url = `/evaluacion/make_review/${id}`; // URL de la API
-      $.post(url)
-        .done(function(data_revision) {
-          // Asumiendo que 'data' es el resultado de la revisión
-          const fechaHora = new Date().toLocaleString("es-PE", { timeZone: "America/Lima" });
+        `;
+      });
+  
+      $('#evaluaciones-list').html(evaluacionesHTML);
+  
+      // Mostrar el modal al hacer clic en el botón de revisión
+      $('.realizar-evaluacion-btn').click(function () {
+        const id = parseInt($(this).data('id'), 10);
+        const nombre = $(this).data('nombre');
+        const descripcion = $(this).data('descripcion');
+  
+        $('#metodoRevisionModal').data('evaluacionId', id);
+        $('#metodoRevisionModal').data('evaluacionNombre', nombre);
+        $('#metodoRevisionModal').data('evaluacionDescripcion', descripcion);
+        $('#metodoRevisionModal').modal('show');
+      });
+  
+      // Actualizar el valor del slider en tiempo real
+      $('#thresholdSlider').on('input', function() {
+        $('#thresholdValue').text($(this).val());
+      });
+  
+      // Confirmar la revisión
+      $('#confirmarRevision').click(function () {
+        const metodo = $('input[name="metodoRevision"]:checked').val();
+        const threshold = $('#thresholdSlider').val(); // Obtener el valor del threshold
+        const id = $('#metodoRevisionModal').data('evaluacionId');
+        const nombre = $('#metodoRevisionModal').data('evaluacionNombre');
+        const descripcion = $('#metodoRevisionModal').data('evaluacionDescripcion');
+        const fechaHora = new Date().toLocaleString("es-PE", { timeZone: "America/Lima" });
+  
+        $('#metodoRevisionModal').modal('hide');
+  
+        if (metodo === 'tdidf') {
+          const url = `/evaluacion/make_review/${id}`;
+          $.ajax({
+            url: url,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ threshold: parseFloat(threshold) }), // Enviar el threshold como JSON
+            success: function(data_revision) {
+              $('#fechaHora').text(fechaHora);
+              $('#resultadoRevisión').html(`<strong>Evaluación:</strong> ${nombre}<br><strong>Descripción:</strong> ${descripcion}<br><strong>Threshold:</strong> ${threshold}<br><strong>Resultado:</strong> ${data_revision}`);
+              $('#resultadoModal').modal('show');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+              alert("Error en la solicitud: " + textStatus + " - " + errorThrown);
+            }
+          });
+        } else if (metodo === 'gemini') {
           $('#fechaHora').text(fechaHora);
-          $('#resultadoRevisión').html(`<strong>Evaluación:</strong> ${nombre}<br><strong>Descripción:</strong> ${descripcion}<br><strong>Resultado:</strong> ${data_revision}`);
-          $('#resultadoModal').modal('show'); // Mostrar el modal
-        })
-        .fail(function(jqXHR, textStatus, errorThrown) {
-          alert("Error en la solicitud: " + textStatus + " - " + errorThrown);
-        });
+          $('#resultadoRevisión').html(`<strong>Evaluación:</strong> ${nombre}<br><strong>Descripción:</strong> ${descripcion}<br><strong>Threshold:</strong> ${threshold}<br><strong>Resultado:</strong> Hola Mundo`);
+          $('#resultadoModal').modal('show');
+        }
+      });
+    }).fail(function () {
+      $('#evaluaciones-list').html('<p class="text-danger">Error al cargar las evaluaciones.</p>');
     });
-  }).fail(function () {
-    $('#evaluaciones-list').html('<p class="text-danger">Error al cargar las evaluaciones.</p>');
   });
-});
   </script>
+  
 {% endblock javascripts %}
