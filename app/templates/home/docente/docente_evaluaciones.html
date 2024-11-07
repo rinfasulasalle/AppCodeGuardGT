@@ -96,8 +96,40 @@
         </button>
       </div>
       <div class="modal-body">
-        <p><strong>Fecha y Hora:</strong> <span id="fechaHora"></span></p>
-        <p id="resultadoRevisión"></p>
+        <h5>Resumen de la Revisión:</h5>
+        <table class="table table-bordered">
+          <tr>
+            <th>Fecha y Hora:</th>
+            <td><span id="fechaHora"></span></td>
+          </tr>
+          <tr>
+            <th>Threshold:</th>
+            <td><span id="thresholdValue"></span></td>
+          </tr>
+          <tr>
+            <th>Total de Códigos Analizados:</th>
+            <td><span id="totalCodes"></span></td>
+          </tr>
+          <tr>
+            <th>Plagio Detectado:</th>
+            <td><span id="plagiarismDetected"></span></td>
+          </tr>
+        </table>
+
+        <h5>Casos de Plagio Detectados:</h5>
+        <div id="plagiarismCases"></div>
+
+        <h5>Comparaciones Detalladas:</h5>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Código A</th>
+              <th>Código B</th>
+              <th>Similitud</th>
+            </tr>
+          </thead>
+          <tbody id="comparisonTable"></tbody>
+        </table>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
@@ -105,6 +137,7 @@
     </div>
   </div>
 </div>
+
 
 {% endblock content %}
 
@@ -175,24 +208,57 @@
       // Confirmar la revisión
       $('#confirmarRevision').click(function () {
         const metodo = $('input[name="metodoRevision"]:checked').val();
-        const threshold = $('#thresholdSlider').val(); // Obtener el valor del threshold
+        const threshold = $('#thresholdSlider').val();
         const id = $('#metodoRevisionModal').data('evaluacionId');
         const nombre = $('#metodoRevisionModal').data('evaluacionNombre');
         const descripcion = $('#metodoRevisionModal').data('evaluacionDescripcion');
         const fechaHora = new Date().toLocaleString("es-PE", { timeZone: "America/Lima" });
-  
+
         $('#metodoRevisionModal').modal('hide');
-  
+
         if (metodo === 'tdidf') {
           const url = `/evaluacion/make_review/${id}`;
           $.ajax({
             url: url,
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ threshold: parseFloat(threshold) }), // Enviar el threshold como JSON
+            data: JSON.stringify({ threshold: parseFloat(threshold) }),
             success: function(data_revision) {
+              const revision = JSON.parse(data_revision);
               $('#fechaHora').text(fechaHora);
-              $('#resultadoRevisión').html(`<strong>Evaluación:</strong> ${nombre}<br><strong>Descripción:</strong> ${descripcion}<br><strong>Threshold:</strong> ${threshold}<br><strong>Resultado:</strong> ${data_revision}`);
+              $('#thresholdValue').text(threshold);
+              $('#totalCodes').text(revision.total_codes_analyzed);
+              $('#plagiarismDetected').text(revision.plagiarism_detected ? 'Sí' : 'No');
+
+              // Mostrar casos de plagio
+              let plagiarismCasesHTML = '';
+              revision.plagiarism_cases.forEach(caseItem => {
+                plagiarismCasesHTML += `
+                  <div class="alert alert-warning">
+                    <strong>Plagio Detectado:</strong><br>
+                    Código A (ID: ${caseItem.codigo_a.id_codigo}) de ${caseItem.codigo_a.estudiante} <br>
+                    Código B (ID: ${caseItem.codigo_b.id_codigo}) de ${caseItem.codigo_b.estudiante} <br>
+                    Similitud: ${caseItem.similarity_score * 100}%<br>
+                    <a href="${caseItem.codigo_a.url_codigo}" target="_blank">Ver Código A</a> | 
+                    <a href="${caseItem.codigo_b.url_codigo}" target="_blank">Ver Código B</a>
+                  </div>
+                `;
+              });
+              $('#plagiarismCases').html(plagiarismCasesHTML);
+
+              // Mostrar tabla de comparaciones
+              let comparisonTableHTML = '';
+              revision.comparisons.forEach(comparison => {
+                comparisonTableHTML += `
+                  <tr>
+                    <td>${comparison.codigo_a.estudiante} (ID: ${comparison.codigo_a.id_codigo})</td>
+                    <td>${comparison.codigo_b.estudiante} (ID: ${comparison.codigo_b.id_codigo})</td>
+                    <td>${(comparison.similarity_score * 100).toFixed(2)}%</td>
+                  </tr>
+                `;
+              });
+              $('#comparisonTable').html(comparisonTableHTML);
+
               $('#resultadoModal').modal('show');
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -201,10 +267,17 @@
           });
         } else if (metodo === 'gemini') {
           $('#fechaHora').text(fechaHora);
-          $('#resultadoRevisión').html(`<strong>Evaluación:</strong> ${nombre}<br><strong>Descripción:</strong> ${descripcion}<br><strong>Threshold:</strong> ${threshold}<br><strong>Resultado:</strong> Hola Mundo`);
+          $('#thresholdValue').text(threshold);
+          $('#totalCodes').text('N/A');
+          $('#plagiarismDetected').text('No disponible');
+
+          $('#plagiarismCases').html('<p>Función de revisión Gemini no disponible aún.</p>');
+          $('#comparisonTable').html('<p>No hay comparaciones disponibles.</p>');
+
           $('#resultadoModal').modal('show');
         }
       });
+      // ------
     }).fail(function () {
       $('#evaluaciones-list').html('<p class="text-danger">Error al cargar las evaluaciones.</p>');
     });
