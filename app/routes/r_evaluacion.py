@@ -8,6 +8,7 @@ from models.matricula import Matricula
 from utils.db import db
 from utils.error_handler import handle_errors
 from utils.plagiarism_checker_tf_idf import plagiarism_checker
+from utils.google_ai import GoogleGenerativeAI, ask_to_ia_google
 
 evaluacion = Blueprint('evaluacion', __name__)
 
@@ -229,3 +230,35 @@ def make_review(id_evaluacion):
     json_result = plagiarism_checker(datos, threshold)
 
     return jsonify(json_result), 200
+
+# Ruta para interactuar con la IA
+@evaluacion.route("/ask_to_ia", methods=['POST'])
+@handle_errors
+def ask_to_ia():
+    data = request.get_json()
+
+    # Validar que los datos están presentes
+    if not data:
+        return jsonify({'error': 'Datos no proporcionados'}), 400
+
+    prompt_total = data.get('prompt')  # La consulta para la IA
+    data_list = data.get('data_list')  # Lista de valores que se pueden pasar
+
+    # Validar que el prompt y la lista están presentes
+    if not prompt_total or not isinstance(prompt_total, str):
+        return jsonify({'error': 'El prompt es requerido y debe ser un string'}), 400
+
+    if not data_list or not isinstance(data_list, list):
+        return jsonify({'error': 'data_list es requerido y debe ser una lista'}), 400
+
+    # Instanciamos la clase GoogleGenerativeAI para interactuar con la IA
+    gen_ai = GoogleGenerativeAI()  
+    prompt_with_data = prompt_total + "\n" + "\n".join(map(str, data_list))  # Combina el prompt con los datos
+
+    # Obtener la respuesta de la IA
+    response = ask_to_ia_google(prompt_with_data)
+
+    if response:
+        return jsonify({'response': response}), 200
+    else:
+        return jsonify({'error': 'No se pudo generar la respuesta'}), 500
