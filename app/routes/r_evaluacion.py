@@ -169,7 +169,7 @@ def get_evaluaciones_by_docente(dni_docente):
         # Crear la entrada del curso en la respuesta
         curso_info = {
             'curso': {
-                'dni_docente': curso.dni_docente,
+                # 'dni_docente': curso.dni_docente,
                 'id_curso': curso.id_curso,
                 'nombre': curso.nombre
             },

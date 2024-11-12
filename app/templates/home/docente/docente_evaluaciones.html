@@ -1,6 +1,8 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Gestión de Evaluaciones {% endblock %}
+{% block title %} Evaluaciones de Docente {% endblock %} 
+
+{% block body_class %} sidebar-mini pace-primary {% endblock body_class %}
 
 {% block stylesheets %}
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -9,279 +11,100 @@
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
 {% endblock stylesheets %}
 
-{% block content %}
-<div class="content-wrapper">
-  <section class="content-header">
-    <div class="container-fluid">
-      <div class="row mb-2">
-        <div class="col-sm-6">
-          <h1 class="text-primary">Gestión de Evaluaciones</h1>
-        </div>
-        <div class="col-sm-6">
-          <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="#">Inicio</a></li>
-            <li class="breadcrumb-item active">Gestión de Evaluaciones</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </section>
+{% block content %}  
 
-  <section class="content">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="card">
-            <div class="card-header bg-info">
-              <h3 class="card-title text-white"><i class="fas fa-check-circle"></i> Evaluaciones por Curso</h3>
-            </div>
-            <div class="card-body">
-              <div id="evaluaciones-list" class="row">
-                <!-- Cursos y evaluaciones se insertarán dinámicamente aquí -->
-              </div>
-            </div>
-            <div class="card-footer bg-light">
-              <p class="text-center">Gestión de Evaluaciones - © 2024</p>
-            </div>
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Evaluaciones del Docente</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Evaluaciones</li>
+            </ol>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
 
-<!-- Modal para selección de método de revisión -->
-<div class="modal fade" id="metodoRevisionModal" tabindex="-1" role="dialog" aria-labelledby="metodoRevisionModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="metodoRevisionModalLabel">Seleccionar Método de Revisión</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+    <section class="content">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Lista de Evaluaciones por Curso</h3>
+        </div>
+        <div class="card-body">
+          <div id="evaluaciones-list"></div> <!-- Aquí se mostrarán las evaluaciones -->
+        </div>
+        <div class="card-footer">
+          Fin de Evaluaciones
+        </div>
       </div>
-      <div class="modal-body">
-        <form id="metodoRevisionForm">
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="metodoRevision" id="tdidf" value="tdidf" checked>
-            <label class="form-check-label" for="tdidf">Realizar revisión mediante algoritmo TF IDF</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="metodoRevision" id="gemini" value="gemini">
-            <label class="form-check-label" for="gemini">Realizar revisión con asistencia de IA Gemini</label>
-          </div>
-
-          <!-- Slider para configurar el threshold -->
-          <div class="mt-4">
-            <label for="thresholdSlider" class="form-label">Configurar Threshold (0 a 1): <span id="thresholdValue">0.5</span></label>
-            <input type="range" class="form-range" id="thresholdSlider" min="0" max="1" step="0.01" value="0.5">
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="confirmarRevision">Confirmar</button>
-      </div>
-    </div>
+    </section>
   </div>
-</div>
-
-<!-- Modal para mostrar el resultado -->
-<div class="modal fade" id="resultadoModal" tabindex="-1" role="dialog" aria-labelledby="resultadoModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="resultadoModalLabel">Resultado de la Revisión</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <h5>Resumen de la Revisión:</h5>
-        <table class="table table-bordered">
-          <tr>
-            <th>Fecha y Hora:</th>
-            <td><span id="fechaHora"></span></td>
-          </tr>
-          <tr>
-            <th>Threshold:</th>
-            <td><span id="thresholdValue"></span></td>
-          </tr>
-          <tr>
-            <th>Total de Códigos Analizados:</th>
-            <td><span id="totalCodes"></span></td>
-          </tr>
-          <tr>
-            <th>Plagio Detectado:</th>
-            <td><span id="plagiarismDetected"></span></td>
-          </tr>
-        </table>
-
-        <h5>Casos de Plagio Detectados:</h5>
-        <div id="plagiarismCases"></div>
-
-        <h5>Comparaciones Detalladas:</h5>
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>Código A</th>
-              <th>Código B</th>
-              <th>Similitud</th>
-            </tr>
-          </thead>
-          <tbody id="comparisonTable"></tbody>
-        </table>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 
 {% endblock content %}
 
 {% block javascripts %}
-<script src="/static/assets/plugins/jquery/jquery.min.js"></script>
-<script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/static/assets/plugins/pace-progress/pace.min.js"></script>
-<script src="/static/assets/js/adminlte.min.js"></script>
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/plugins/pace-progress/pace.min.js"></script>
+  <script src="/static/assets/js/adminlte.min.js"></script>
 
-<script>
-  $(document).ready(function () {
+  <script>
+    // Obtenemos la referencia del contenedor de evaluaciones
+    const evaluacionesList = document.getElementById('evaluaciones-list');
+
+    // Ruta para obtener las evaluaciones del docente
     const dni_docente = "{{ current_user.dni }}";
-    const api_url = `/evaluacion/get_evaluaciones_by_docente/${dni_docente}`;
-  
-    $.get(api_url, function (data) {
-      let evaluacionesHTML = '';
-  
-      data.cursos.forEach(curso => {
-        evaluacionesHTML += `
-          <div class="col-md-6 mb-4">
-            <div class="card border-info">
-              <div class="card-header bg-info text-white">
-                <h5 class="card-title"><i class="fas fa-book"></i> ${curso.curso.nombre} (ID: ${curso.curso.id_curso})</h5>
-              </div>
-              <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted">Evaluaciones:</h6>
-                <ul class="list-group">
-                  ${curso.evaluaciones.length > 0
-                    ? curso.evaluaciones.map(evaluacion => `
-                      <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-pencil-alt"></i> <strong>${evaluacion.nombre}</strong></span>
-                        <button class="btn btn-sm btn-primary realizar-evaluacion-btn" 
-                                data-id="${evaluacion.id_evaluacion}" 
-                                data-nombre="${evaluacion.nombre}" 
-                                data-descripcion="${evaluacion.descripcion}">
-                          Realizar Revisión
-                        </button>
-                      </li>
-                    `).join('')
-                    : '<li class="list-group-item text-danger">No hay evaluaciones para este curso.</li>'
-                  }
-                </ul>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-  
-      $('#evaluaciones-list').html(evaluacionesHTML);
-  
-      // Mostrar el modal al hacer clic en el botón de revisión
-      $('.realizar-evaluacion-btn').click(function () {
-        const id = parseInt($(this).data('id'), 10);
-        const nombre = $(this).data('nombre');
-        const descripcion = $(this).data('descripcion');
-  
-        $('#metodoRevisionModal').data('evaluacionId', id);
-        $('#metodoRevisionModal').data('evaluacionNombre', nombre);
-        $('#metodoRevisionModal').data('evaluacionDescripcion', descripcion);
-        $('#metodoRevisionModal').modal('show');
-      });
-  
-      // Actualizar el valor del slider en tiempo real
-      $('#thresholdSlider').on('input', function() {
-        $('#thresholdValue').text($(this).val());
-      });
-  
-      // Confirmar la revisión
-      $('#confirmarRevision').click(function () {
-        const metodo = $('input[name="metodoRevision"]:checked').val();
-        const threshold = $('#thresholdSlider').val();
-        const id = $('#metodoRevisionModal').data('evaluacionId');
-        const nombre = $('#metodoRevisionModal').data('evaluacionNombre');
-        const descripcion = $('#metodoRevisionModal').data('evaluacionDescripcion');
-        const fechaHora = new Date().toLocaleString("es-PE", { timeZone: "America/Lima" });
+    const url = "{{ url_for('evaluacion.get_evaluaciones_by_docente', dni_docente='') }}" + dni_docente;
 
-        $('#metodoRevisionModal').modal('hide');
+    // Hacer la solicitud GET a la API
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        // Procesar y mostrar los datos de los cursos y evaluaciones
+        if (data.cursos && data.cursos.length > 0) {
+          data.cursos.forEach(curso => {
+            // Crear un div para el curso
+            const cursoDiv = document.createElement('div');
+            cursoDiv.classList.add('mb-3');
+            cursoDiv.innerHTML = `<h4>Curso: ${curso.curso.nombre} (ID: ${curso.curso.id_curso})</h4>`;
 
-        if (metodo === 'tdidf') {
-          const url = `/evaluacion/make_review/${id}`;
-          $.ajax({
-            url: url,
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ threshold: parseFloat(threshold) }),
-            success: function(data_revision) {
-              const revision = JSON.parse(data_revision);
-              $('#fechaHora').text(fechaHora);
-              $('#thresholdValue').text(threshold);
-              $('#totalCodes').text(revision.total_codes_analyzed);
-              $('#plagiarismDetected').text(revision.plagiarism_detected ? 'Sí' : 'No');
+            // Crear una lista para las evaluaciones
+            const evaluacionesUl = document.createElement('ul');
 
-              // Mostrar casos de plagio
-              let plagiarismCasesHTML = '';
-              revision.plagiarism_cases.forEach(caseItem => {
-                plagiarismCasesHTML += `
-                  <div class="alert alert-warning">
-                    <strong>Plagio Detectado:</strong><br>
-                    Código A (ID: ${caseItem.codigo_a.id_codigo}) de ${caseItem.codigo_a.estudiante} <br>
-                    Código B (ID: ${caseItem.codigo_b.id_codigo}) de ${caseItem.codigo_b.estudiante} <br>
-                    Similitud: ${caseItem.similarity_score * 100}%<br>
-                    <a href="${caseItem.codigo_a.url_codigo}" target="_blank">Ver Código A</a> | 
-                    <a href="${caseItem.codigo_b.url_codigo}" target="_blank">Ver Código B</a>
-                  </div>
+            // Verificar si hay evaluaciones para este curso
+            if (curso.evaluaciones && curso.evaluaciones.length > 0) {
+              curso.evaluaciones.forEach(evaluacion => {
+                const evaluacionLi = document.createElement('li');
+                evaluacionLi.innerHTML = `
+                  <strong>${evaluacion.nombre}</strong><br>
+                  <em>Descripción:</em> ${evaluacion.descripcion}<br>
+                  <em>ID de Evaluación:</em> ${evaluacion.id_evaluacion}
                 `;
+                evaluacionesUl.appendChild(evaluacionLi);
               });
-              $('#plagiarismCases').html(plagiarismCasesHTML);
-
-              // Mostrar tabla de comparaciones
-              let comparisonTableHTML = '';
-              revision.comparisons.forEach(comparison => {
-                comparisonTableHTML += `
-                  <tr>
-                    <td>${comparison.codigo_a.estudiante} (ID: ${comparison.codigo_a.id_codigo})</td>
-                    <td>${comparison.codigo_b.estudiante} (ID: ${comparison.codigo_b.id_codigo})</td>
-                    <td>${(comparison.similarity_score * 100).toFixed(2)}%</td>
-                  </tr>
-                `;
-              });
-              $('#comparisonTable').html(comparisonTableHTML);
-
-              $('#resultadoModal').modal('show');
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-              alert("Error en la solicitud: " + textStatus + " - " + errorThrown);
+            } else {
+              // Si no hay evaluaciones, mostrar un mensaje
+              const noEvaluacionesLi = document.createElement('li');
+              noEvaluacionesLi.textContent = 'No hay evaluaciones para este curso.';
+              evaluacionesUl.appendChild(noEvaluacionesLi);
             }
+
+            // Añadir la lista de evaluaciones al div del curso
+            cursoDiv.appendChild(evaluacionesUl);
+            evaluacionesList.appendChild(cursoDiv);
           });
-        } else if (metodo === 'gemini') {
-          $('#fechaHora').text(fechaHora);
-          $('#thresholdValue').text(threshold);
-          $('#totalCodes').text('N/A');
-          $('#plagiarismDetected').text('No disponible');
-
-          $('#plagiarismCases').html('<p>Función de revisión Gemini no disponible aún.</p>');
-          $('#comparisonTable').html('<p>No hay comparaciones disponibles.</p>');
-
-          $('#resultadoModal').modal('show');
+        } else {
+          evaluacionesList.innerHTML = '<p>No hay cursos asociados a este docente.</p>';
         }
+      })
+      .catch(error => {
+        console.error('Error al obtener las evaluaciones:', error);
+        evaluacionesList.innerHTML = '<p>Error al cargar las evaluaciones.</p>';
       });
-      // ------
-    }).fail(function () {
-      $('#evaluaciones-list').html('<p class="text-danger">Error al cargar las evaluaciones.</p>');
-    });
-  });
   </script>
-  
 {% endblock javascripts %}
