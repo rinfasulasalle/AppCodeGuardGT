@@ -26,7 +26,7 @@ def get_all_evaluaciones():
 # Obtener una evaluación por su ID
 @evaluacion.route("/get_by_id/<int:id_evaluacion>", methods=['GET'])
 @handle_errors
-def get_evaluacion_by_id(id_evaluacion):
+def get_by_id(id_evaluacion):
     evaluacion = Evaluacion.query.filter_by(id_evaluacion=id_evaluacion).first()
     if evaluacion:
         return jsonify(evaluacion.to_dict()), 200
