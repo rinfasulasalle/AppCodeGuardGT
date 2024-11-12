@@ -26,14 +26,13 @@ def calculate_cosine_similarity(tfidf_matrix):
 
 ### 4. DETECTAR PLAGIO Y PREPARAR SALIDA JSON DETALLADA
 def detect_plagiarism(data, threshold=0.8):
-    """Detecta casos de plagio y devuelve una salida detallada en JSON."""
-
+    """Detecta casos de plagio y devuelve una salida detallada en un diccionario."""
     # Comprobar si hay datos suficientes
     n = len(data)
     if n == 0:
-        return json.dumps({"error": "No hay códigos para analizar."}, ensure_ascii=False)
+        return {"error": "No hay códigos para analizar."}
     elif n == 1:
-        return json.dumps({"Solo hay un código para analizar, no se puede comparar."}, ensure_ascii=False)
+        return {"message": "Solo hay un código para analizar, no se puede comparar."}
 
     # Preprocesar los códigos SQL
     codes = [preprocess_sql(item['codigo_sql']) for item in data]
@@ -61,7 +60,7 @@ def detect_plagiarism(data, threshold=0.8):
                     "similarity_score": round(similarity, 2)
                 })
 
-    # Formatear la salida en JSON
+    # Formatear la salida en diccionario
     result = {
         "total_codes_analyzed": n,
         "threshold": threshold,
@@ -72,12 +71,10 @@ def detect_plagiarism(data, threshold=0.8):
                 "codigo_a": {
                     "id_codigo": data[i]["id_codigo"],
                     "estudiante": data[i]["estudiante"],
-                    #"url_codigo": data[i]["url_codigo"]
                 },
                 "codigo_b": {
                     "id_codigo": data[j]["id_codigo"],
                     "estudiante": data[j]["estudiante"],
-                    #"url_codigo": data[j]["url_codigo"]
                 },
                 "similarity_score": round(sim_matrix[i, j], 2)
             }
@@ -85,7 +82,7 @@ def detect_plagiarism(data, threshold=0.8):
         ]
     }
 
-    return json.dumps(result, indent=4, ensure_ascii=False)
+    return result  # Devuelve un diccionario, no un JSON
 
 ### 5. FUNCIÓN PRINCIPAL
 def plagiarism_checker(datos, threshold=0.8):

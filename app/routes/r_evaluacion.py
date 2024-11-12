@@ -184,10 +184,14 @@ def get_evaluaciones_by_docente(dni_docente):
 
     return jsonify(response), 200
 
-# Ruta para realizar revisión por id_evaluacion
 @evaluacion.route("/make_review/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
 def make_review(id_evaluacion):
+    # Verificar si el parámetro 'threshold' está presente en la solicitud
+    threshold = request.json.get('threshold')
+    if threshold is None:
+        return jsonify({'message': 'El parámetro "threshold" es obligatorio.'}), 400
+
     # Obtener los códigos entregados por la evaluación
     codigos = (
         db.session.query(
@@ -223,14 +227,11 @@ def make_review(id_evaluacion):
         for codigo in codigos
     ]
 
-    # Obtener el threshold del JSON en la solicitud
-    threshold = request.json.get('threshold', 0.8)  # Usa 0.8 como valor por defecto si no se envía threshold
-
     # Verificar el plagio con el threshold proporcionado
-    json_result = plagiarism_checker(datos, threshold)
+    result = plagiarism_checker(datos, threshold)
 
-    return jsonify(json_result), 200
-
+    # Devolver el resultado como JSON
+    return jsonify(result), 200
 # Ruta para interactuar con la IA
 @evaluacion.route("/ask_to_ia", methods=['POST'])
 @handle_errors
