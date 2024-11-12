@@ -68,18 +68,25 @@
     const dni_docente = "{{ current_user.dni }}";
     const url = "{{ url_for('evaluacion.get_evaluaciones_by_docente', dni_docente='') }}" + dni_docente;
 
+    // Definir una lista de colores para las tarjetas
+    const cardColors = ["bg-primary", "bg-success", "bg-info", "bg-warning", "bg-danger"];
+
     fetch(url)
       .then(response => response.json())
       .then(data => {
         if (data.cursos && data.cursos.length > 0) {
           data.cursos.forEach(curso => {
+            // Seleccionar un color aleatorio para cada tarjeta
+            const randomColor = cardColors[Math.floor(Math.random() * cardColors.length)];
+
             // Crear el card del curso
             const cursoCard = document.createElement('div');
             cursoCard.classList.add('col-md-6', 'col-lg-4');  // Responsivo en pantallas grandes y medianas
             cursoCard.innerHTML = `
               <div class="card curso-card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                  <h5 class="card-title mb-0">${curso.curso.nombre}</h5>
+                <div class="card-header ${randomColor} text-white">
+                  <h1 class="card-title mb-0">${curso.curso.nombre}</h1>
+                  <br>
                   <small>ID Curso: ${curso.curso.id_curso}</small>
                 </div>
                 <div class="card-body">
