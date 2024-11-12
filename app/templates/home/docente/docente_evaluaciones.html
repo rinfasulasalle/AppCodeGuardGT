@@ -9,6 +9,24 @@
   <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="/static/assets/plugins/pace-progress/themes/black/pace-theme-flat-top.css">
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <style>
+    .curso-card {
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+    }
+    .evaluacion-item {
+      padding: 10px;
+      border-radius: 6px;
+      background-color: #f8f9fa;
+      margin-bottom: 10px;
+    }
+    .evaluacion-item strong {
+      color: #007bff;
+    }
+    .card-header h5 {
+      margin: 0;
+    }
+  </style>
 {% endblock stylesheets %}
 
 {% block content %}  
@@ -31,16 +49,8 @@
     </section>
 
     <section class="content">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Lista de Evaluaciones por Curso</h3>
-        </div>
-        <div class="card-body">
-          <div id="evaluaciones-list"></div> <!-- Aquí se mostrarán las evaluaciones -->
-        </div>
-        <div class="card-footer">
-          Fin de Evaluaciones
-        </div>
+      <div class="container-fluid">
+        <div id="evaluaciones-list" class="row"></div> <!-- Aquí se mostrarán las evaluaciones en formato de cards -->
       </div>
     </section>
   </div>
@@ -54,57 +64,46 @@
   <script src="/static/assets/js/adminlte.min.js"></script>
 
   <script>
-    // Obtenemos la referencia del contenedor de evaluaciones
     const evaluacionesList = document.getElementById('evaluaciones-list');
-
-    // Ruta para obtener las evaluaciones del docente
     const dni_docente = "{{ current_user.dni }}";
     const url = "{{ url_for('evaluacion.get_evaluaciones_by_docente', dni_docente='') }}" + dni_docente;
 
-    // Hacer la solicitud GET a la API
     fetch(url)
       .then(response => response.json())
       .then(data => {
-        // Procesar y mostrar los datos de los cursos y evaluaciones
         if (data.cursos && data.cursos.length > 0) {
           data.cursos.forEach(curso => {
-            // Crear un div para el curso
-            const cursoDiv = document.createElement('div');
-            cursoDiv.classList.add('mb-3');
-            cursoDiv.innerHTML = `<h4>Curso: ${curso.curso.nombre} (ID: ${curso.curso.id_curso})</h4>`;
-
-            // Crear una lista para las evaluaciones
-            const evaluacionesUl = document.createElement('ul');
-
-            // Verificar si hay evaluaciones para este curso
-            if (curso.evaluaciones && curso.evaluaciones.length > 0) {
-              curso.evaluaciones.forEach(evaluacion => {
-                const evaluacionLi = document.createElement('li');
-                evaluacionLi.innerHTML = `
-                  <strong>${evaluacion.nombre}</strong><br>
-                  <em>Descripción:</em> ${evaluacion.descripcion}<br>
-                  <em>ID de Evaluación:</em> ${evaluacion.id_evaluacion}
-                `;
-                evaluacionesUl.appendChild(evaluacionLi);
-              });
-            } else {
-              // Si no hay evaluaciones, mostrar un mensaje
-              const noEvaluacionesLi = document.createElement('li');
-              noEvaluacionesLi.textContent = 'No hay evaluaciones para este curso.';
-              evaluacionesUl.appendChild(noEvaluacionesLi);
-            }
-
-            // Añadir la lista de evaluaciones al div del curso
-            cursoDiv.appendChild(evaluacionesUl);
-            evaluacionesList.appendChild(cursoDiv);
+            // Crear el card del curso
+            const cursoCard = document.createElement('div');
+            cursoCard.classList.add('col-md-6', 'col-lg-4');  // Responsivo en pantallas grandes y medianas
+            cursoCard.innerHTML = `
+              <div class="card curso-card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="card-title mb-0">${curso.curso.nombre}</h5>
+                  <small>ID Curso: ${curso.curso.id_curso}</small>
+                </div>
+                <div class="card-body">
+                  <h6>Evaluaciones:</h6>
+                  <div class="evaluaciones-list">
+                  ${curso.evaluaciones.length > 0 ? curso.evaluaciones.map(evaluacion => `
+                    <div class="evaluacion-item">
+                      <strong>${evaluacion.nombre}</strong><br>
+                      <small>${evaluacion.descripcion}</small>
+                    </div>
+                  `).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
+                  </div>
+                </div>
+              </div>
+            `;
+            evaluacionesList.appendChild(cursoCard);
           });
         } else {
-          evaluacionesList.innerHTML = '<p>No hay cursos asociados a este docente.</p>';
+          evaluacionesList.innerHTML = '<div class="col-12"><p class="text-center">No hay cursos asociados a este docente.</p></div>';
         }
       })
       .catch(error => {
         console.error('Error al obtener las evaluaciones:', error);
-        evaluacionesList.innerHTML = '<p>Error al cargar las evaluaciones.</p>';
+        evaluacionesList.innerHTML = '<div class="col-12"><p class="text-center text-danger">Error al cargar las evaluaciones.</p></div>';
       });
   </script>
 {% endblock javascripts %}
