@@ -83,24 +83,25 @@
             const cursoCard = document.createElement('div');
             cursoCard.classList.add('col-md-6', 'col-lg-4');  // Responsivo en pantallas grandes y medianas
             cursoCard.innerHTML = `
-              <div class="card curso-card shadow-sm">
+            <div class="card curso-card shadow-sm">
                 <div class="card-header ${randomColor} text-white">
-                  <h1 class="card-title mb-0">${curso.curso.nombre}</h1>
-                  <br>
-                  <small>ID Curso: ${curso.curso.id_curso}</small>
+                    <h1 class="card-title mb-0">${curso.curso.nombre}</h1>
                 </div>
                 <div class="card-body">
-                  <h6>Evaluaciones:</h6>
-                  <div class="evaluaciones-list">
-                  ${curso.evaluaciones.length > 0 ? curso.evaluaciones.map(evaluacion => `
+                <h6>Evaluaciones:</h6>
+                <div class="evaluaciones-list">
+                    ${curso.evaluaciones.length > 0 ? curso.evaluaciones.map(evaluacion => `
                     <div class="evaluacion-item">
-                      <strong>${evaluacion.nombre}</strong><br>
-                      <small>${evaluacion.descripcion}</small>
+                        <strong>${evaluacion.nombre}</strong><br>
+                        <small>${evaluacion.descripcion}</small>
                     </div>
-                  `).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
-                  </div>
+                    `).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
                 </div>
-              </div>
+                </div>
+                <div class="card-footer ${randomColor} text-white" style="font-size: 0.9rem; padding: 5px 10px; background-color: rgba(0, 0, 0, 0.1); border-top: 1px solid rgba(0, 0, 0, 0.2); border-radius: 0 0 5px 5px;">
+                <small>ID Curso: ${curso.curso.id_curso}</small>
+                </div>
+            </div>
             `;
             evaluacionesList.appendChild(cursoCard);
           });
