@@ -78,7 +78,7 @@
           data.cursos.forEach(curso => {
             // Seleccionar un color aleatorio para cada tarjeta
             const randomColor = cardColors[Math.floor(Math.random() * cardColors.length)];
-
+            const cardColor = curso.evaluaciones.length === 0 ? 'bg-danger' : randomColor;
             // Crear el card del curso
             const cursoCard = document.createElement('div');
             cursoCard.classList.add('col-md-6', 'col-lg-4');  // Responsivo en pantallas grandes y medianas
