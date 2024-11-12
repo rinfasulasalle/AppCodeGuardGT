@@ -1,66 +1,36 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Evaluaciones de Docente {% endblock %} 
-
-{% block body_class %} sidebar-mini pace-primary {% endblock body_class %}
+{% block title %}Evaluaciones de Docente{% endblock %} 
 
 {% block stylesheets %}
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
-  <link rel="stylesheet" href="/static/assets/plugins/pace-progress/themes/black/pace-theme-flat-top.css">
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
   <style>
-    .curso-card {
-      margin-bottom: 1.5rem;
-      border-radius: 8px;
-    }
-    .evaluacion-item {
-      padding: 10px;
-      border-radius: 6px;
-      background-color: #f8f9fa;
-      margin-bottom: 10px;
-    }
-    .evaluacion-item strong {
-      color: #007bff;
-    }
-    .card-header h5 {
-      margin: 0;
-    }
+    .curso-card { margin-bottom: 1.5rem; border-radius: 8px; }
+    .evaluacion-item { padding: 10px; border-radius: 6px; background-color: #f8f9fa; margin-bottom: 10px; }
+    .evaluacion-item strong { color: #007bff; }
   </style>
 {% endblock stylesheets %}
 
 {% block content %}  
-
   <div class="content-wrapper">
     <section class="content-header">
       <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Evaluaciones del Docente</h1>
-          </div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Evaluaciones</li>
-            </ol>
-          </div>
-        </div>
+        <h1>Evaluaciones del Docente</h1>
       </div>
     </section>
-
     <section class="content">
       <div class="container-fluid">
-        <div id="evaluaciones-list" class="row"></div> <!-- Aquí se mostrarán las evaluaciones en formato de cards -->
+        <div id="evaluaciones-list" class="row"></div>
       </div>
     </section>
   </div>
-
 {% endblock content %}
 
 {% block javascripts %}
   <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
   <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="/static/assets/plugins/pace-progress/pace.min.js"></script>
   <script src="/static/assets/js/adminlte.min.js"></script>
 
   <script>
@@ -68,43 +38,41 @@
     const dni_docente = "{{ current_user.dni }}";
     const url = "{{ url_for('evaluacion.get_evaluaciones_by_docente', dni_docente='') }}" + dni_docente;
 
-    // Definir una lista de colores para las tarjetas
     const cardColors = ["bg-primary", "bg-success", "bg-info", "bg-warning", "bg-danger"];
+
+    function createCursoCard(curso) {
+      const colorClass = cardColors[Math.floor(Math.random() * cardColors.length)];
+      const evaluaciones = curso.evaluaciones.length ? curso.evaluaciones.map(createEvaluacionItem).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>';
+      
+      return `
+        <div class="col-md-6 col-lg-4">
+          <div class="card curso-card shadow-sm">
+            <div class="card-header ${colorClass} text-white">
+              <h5 class="card-title mb-0">${curso.curso.nombre}</h5>
+              <small>ID Curso: ${curso.curso.id_curso}</small>
+            </div>
+            <div class="card-body">
+              <h6>Evaluaciones:</h6>
+              <div class="evaluaciones-list">${evaluaciones}</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function createEvaluacionItem(evaluacion) {
+      return `
+        <div class="evaluacion-item">
+          <strong>${evaluacion.nombre}</strong><br>
+          <small>${evaluacion.descripcion}</small><br>
+          <button class="btn btn-sm btn-primary mt-2">Realizar Revisión</button>
+        </div>`;
+    }
 
     fetch(url)
       .then(response => response.json())
       .then(data => {
         if (data.cursos && data.cursos.length > 0) {
-          data.cursos.forEach(curso => {
-            // Seleccionar un color aleatorio para cada tarjeta
-            const randomColor = cardColors[Math.floor(Math.random() * cardColors.length)];
-            const cardColor = curso.evaluaciones.length === 0 ? 'bg-danger' : randomColor;
-            // Crear el card del curso
-            const cursoCard = document.createElement('div');
-            cursoCard.classList.add('col-md-6', 'col-lg-4');  // Responsivo en pantallas grandes y medianas
-            cursoCard.innerHTML = `
-            <div class="card curso-card shadow-sm">
-                <div class="card-header ${randomColor} text-white">
-                    <h1 class="card-title mb-0">${curso.curso.nombre}</h1>
-                </div>
-                <div class="card-body">
-                <h6>Evaluaciones:</h6>
-                <div class="evaluaciones-list">
-                    ${curso.evaluaciones.length > 0 ? curso.evaluaciones.map(evaluacion => `
-                    <div class="evaluacion-item">
-                        <strong>${evaluacion.nombre}</strong><br>
-                        <small>${evaluacion.descripcion}</small>
-                    </div>
-                    `).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
-                </div>
-                </div>
-                <div class="card-footer ${randomColor} text-white" style="font-size: 0.9rem; padding: 5px 10px; background-color: rgba(0, 0, 0, 0.1); border-top: 1px solid rgba(0, 0, 0, 0.2); border-radius: 0 0 5px 5px;">
-                <small>ID Curso: ${curso.curso.id_curso}</small>
-                </div>
-            </div>
-            `;
-            evaluacionesList.appendChild(cursoCard);
-          });
+          evaluacionesList.innerHTML = data.cursos.map(createCursoCard).join('');
         } else {
           evaluacionesList.innerHTML = '<div class="col-12"><p class="text-center">No hay cursos asociados a este docente.</p></div>';
         }
