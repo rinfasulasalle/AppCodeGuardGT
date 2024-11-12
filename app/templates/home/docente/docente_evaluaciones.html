@@ -64,8 +64,12 @@
         <div class="evaluacion-item">
           <strong>${evaluacion.nombre}</strong><br>
           <small>${evaluacion.descripcion}</small><br>
-          <button class="btn btn-sm btn-primary mt-2">Realizar Revisión</button>
+          <button class="btn btn-sm btn-primary mt-2" onclick="realizarRevision(${evaluacion.id_evaluacion})">Realizar Revisión</button>
         </div>`;
+    }
+
+    function realizarRevision(idEvaluacion) {
+      console.log(`ID de la evaluación: ${idEvaluacion}`);
     }
 
     fetch(url)
