@@ -184,9 +184,9 @@ def get_evaluaciones_by_docente(dni_docente):
 
     return jsonify(response), 200
 
-@evaluacion.route("/make_review/<int:id_evaluacion>", methods=['POST'])
+@evaluacion.route("/make_review_tf_idf/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
-def make_review(id_evaluacion):
+def make_review_tf_idf(id_evaluacion):
     # Verificar si el parámetro 'threshold' está presente en la solicitud
     threshold = request.json.get('threshold')
     if threshold is None:
@@ -232,34 +232,66 @@ def make_review(id_evaluacion):
 
     # Devolver el resultado como JSON
     return jsonify(result), 200
+
 # Ruta para interactuar con la IA
-@evaluacion.route("/ask_to_ia", methods=['POST'])
+@evaluacion.route("/make_review_ia_gemini/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
-def ask_to_ia():
-    data = request.get_json()
+def make_review_ia_gemini(id_evaluacion):
+    # Obtener el prompt, threshold y métrica del cuerpo de la solicitud
+    data = request.json
+    prompt_contexto = data.get('prompt_contexto', "Eres un experto en bases de datos SQL para MySQL.")
+    threshold = data.get('threshold')
+    metrica = data.get('metrica')
 
-    # Validar que los datos están presentes
-    if not data:
-        return jsonify({'error': 'Datos no proporcionados'}), 400
+    if not prompt_contexto or threshold is None or not metrica:
+        return jsonify({'message': 'El "prompt_contexto", "threshold" y "metrica" son obligatorios.'}), 400
 
-    prompt_total = data.get('prompt')  # La consulta para la IA
-    data_list = data.get('data_list')  # Lista de valores que se pueden pasar
+    # Obtener los códigos entregados por la evaluación
+    codigos = (
+        db.session.query(
+            Codigo.id_codigo,
+            Codigo.url_codigo,
+            Codigo.codigo_sql,
+            Usuario.dni,
+            Usuario.nombres,
+            Usuario.apellidos
+        )
+        .join(Matricula, Codigo.id_matricula == Matricula.id_matricula)
+        .join(Usuario, Matricula.dni_estudiante == Usuario.dni)
+        .filter(Codigo.id_evaluacion == id_evaluacion)
+        .all()
+    )
 
-    # Validar que el prompt y la lista están presentes
-    if not prompt_total or not isinstance(prompt_total, str):
-        return jsonify({'error': 'El prompt es requerido y debe ser un string'}), 400
+    # Verificar si existen códigos
+    if not codigos:
+        return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
 
-    if not data_list or not isinstance(data_list, list):
-        return jsonify({'error': 'data_list es requerido y debe ser una lista'}), 400
+    # Formatear los datos para enviar a la IA
+    datos = [
+        {
+            'id_codigo': codigo.id_codigo,
+            'url_codigo': codigo.url_codigo,
+            'codigo_sql': codigo.codigo_sql,
+            'estudiante': {
+                'dni': codigo.dni,
+                'nombres': codigo.nombres,
+                'apellidos': codigo.apellidos
+            }
+        }
+        for codigo in codigos
+    ]
 
-    # Instanciamos la clase GoogleGenerativeAI para interactuar con la IA
-    gen_ai = GoogleGenerativeAI()  
-    prompt_with_data = prompt_total + "\n" + "\n".join(map(str, data_list))  # Combina el prompt con los datos
+    # Crear el prompt con el contexto, threshold, métrica y datos de los códigos
+    prompt_total = (
+        f"{prompt_contexto}\n"
+        f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} utilizando la métrica de {metrica}. "
+        "Determina si existe algún plagio en los códigos proporcionados, y proporciona un análisis detallado de coincidencias sospechosas.\n\n"
+        f"Códigos para evaluar:\n{datos}"
+    )
 
-    # Obtener la respuesta de la IA
-    response = ask_to_ia_google(prompt_with_data)
+    response_text = ask_to_ia_google(prompt_total)
 
-    if response:
-        return jsonify({'response': response}), 200
-    else:
-        return jsonify({'error': 'No se pudo generar la respuesta'}), 500
+    if response_text is None:
+        return jsonify({'message': 'La IA Gemini no pudo procesar la solicitud.'}), 500
+
+    return jsonify({'result': response_text}), 200
