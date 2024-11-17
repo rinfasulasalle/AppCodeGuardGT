@@ -6,11 +6,6 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
-  <style>
-    .curso-card { margin-bottom: 1.5rem; border-radius: 8px; }
-    .evaluacion-item { padding: 10px; border-radius: 6px; background-color: #f8f9fa; margin-bottom: 10px; }
-    .evaluacion-item strong { color: #007bff; }
-  </style>
 {% endblock stylesheets %}
 
 {% block content %}  
@@ -26,6 +21,7 @@
       </div>
     </section>
   </div>
+
   <!-- Modal -->
   <div class="modal fade" id="revisionModal" tabindex="-1">
     <div class="modal-dialog">
@@ -38,16 +34,18 @@
           <form id="revisionForm">
             <div class="form-group">
               <label>Método de Análisis:</label><br>
-              {% for method, label in {"tfidf": "Método TF-IDF", "ia_gemini": "Método IA Gemini"}.items() %}
               <div class="form-check">
-                <input type="radio" class="form-check-input" id="{{ method }}" name="method" value="{{ method }}" {% if loop.first %}checked{% endif %} onclick="toggleMetricField()">
-                <label class="form-check-label" for="{{ method }}">{{ label }}</label>
+                <input type="radio" class="form-check-input" id="tfidf" name="method" value="tfidf" checked onclick="toggleMetricField()">
+                <label class="form-check-label" for="tfidf">Método TF-IDF</label>
               </div>
-              {% endfor %}
+              <div class="form-check">
+                <input type="radio" class="form-check-input" id="ia_gemini" name="method" value="ia_gemini" onclick="toggleMetricField()">
+                <label class="form-check-label" for="ia_gemini">Método IA Gemini</label>
+              </div>
             </div>
             <div class="form-group" id="metricField" style="display: none;">
               <label for="metric">Métrica (obligatoria para IA Gemini):</label>
-              <input type="text" id="metric" name="metric" class="form-control" placeholder="Introduce la métrica" required>
+              <input type="text" id="metric" name="metric" class="form-control" placeholder="Introduce la métrica">
             </div>
             <div class="form-group">
               <label for="threshold">Threshold (0.00 - 1.00):</label>
@@ -70,75 +68,54 @@
   <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/static/assets/js/adminlte.min.js"></script>
   <script>
-    const evaluacionesList = document.getElementById('evaluaciones-list');
-    const cardColors = ["bg-primary", "bg-success", "bg-info", "bg-warning", "bg-danger"];
-
     fetch("{{ url_for('evaluacion.get_evaluaciones_by_docente', dni_docente=current_user.dni) }}")
       .then(res => res.json())
       .then(data => {
+        const evaluacionesList = document.getElementById('evaluaciones-list');
         evaluacionesList.innerHTML = data.cursos?.length 
-          ? data.cursos.map(curso => createCursoCard(curso)).join('') 
+          ? data.cursos.map(curso => `
+              <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm">
+                  <div class="card-header bg-${['primary', 'success', 'info', 'warning', 'danger'][Math.floor(Math.random() * 5)]} text-white">
+                    <h5 class="card-title mb-0">${curso.curso.nombre}</h5>
+                    <small>ID Curso: ${curso.curso.id_curso}</small>
+                  </div>
+                  <div class="card-body">
+                    <h6>Evaluaciones:</h6>
+                    ${curso.evaluaciones.length ? curso.evaluaciones.map(eval => `
+                      <div class="evaluacion-item">
+                        <strong>${eval.nombre}</strong><br>
+                        <small>${eval.descripcion}</small><br>
+                        <button class="btn btn-sm btn-primary mt-2" onclick="openRevisionModal(${eval.id_evaluacion})">Realizar Revisión</button>
+                      </div>`).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
+                  </div>
+                </div>
+              </div>
+            `).join('') 
           : '<div class="col-12"><p class="text-center">No hay cursos asociados a este docente.</p></div>';
       })
-      .catch(() => evaluacionesList.innerHTML = '<div class="col-12"><p class="text-center text-danger">Error al cargar las evaluaciones.</p></div>');
-    
-    const createCursoCard = curso => `
-      <div class="col-md-6 col-lg-4">
-        <div class="card curso-card shadow-sm">
-          <div class="card-header ${cardColors[Math.floor(Math.random() * cardColors.length)]} text-white">
-            <h5 class="card-title mb-0">${curso.curso.nombre}</h5>
-            <small>ID Curso: ${curso.curso.id_curso}</small>
-          </div>
-          <div class="card-body">
-            <h6>Evaluaciones:</h6>
-            <div class="evaluaciones-list">
-              ${curso.evaluaciones.length ? curso.evaluaciones.map(createEvaluacionItem).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
-            </div>
-          </div>
-        </div>
-      </div>`;
-    
-    const createEvaluacionItem = eval => `
-      <div class="evaluacion-item">
-        <strong>${eval.nombre}</strong><br>
-        <small>${eval.descripcion}</small><br>
-        <button class="btn btn-sm btn-primary mt-2" onclick="openRevisionModal(${eval.id_evaluacion})">Realizar Revisión</button>
-      </div>`;
+      .catch(() => document.getElementById('evaluaciones-list').innerHTML = '<div class="col-12"><p class="text-center text-danger">Error al cargar las evaluaciones.</p></div>');
     
     const openRevisionModal = id => $('#revisionModal').data('idEvaluacion', id).modal('show');
-    
+
     const toggleMetricField = () => {
-      const method = document.querySelector('input[name="method"]:checked').value;
-      const metricField = document.getElementById('metricField');
-      if (method === 'ia_gemini') {
-        metricField.style.display = 'block';
-      } else {
-        metricField.style.display = 'none';
-      }
+      document.getElementById('metricField').style.display = document.querySelector('input[name="method"]:checked').value === 'ia_gemini' ? 'block' : 'none';
     };
 
     const updateThresholdLabel = value => document.getElementById('thresholdValue').textContent = parseFloat(value).toFixed(2);
 
     const submitRevision = () => {
-      const idEvaluacion = $('#revisionModal').data('idEvaluacion');
-      const method = document.querySelector('input[name="method"]:checked').value;
-      const threshold = parseFloat(document.getElementById('threshold').value);
-      let metric = null;
+      const form = document.getElementById('revisionForm');
+      const method = form.method.value;
+      const threshold = parseFloat(form.threshold.value);
+      const metric = method === 'ia_gemini' ? form.metric.value : null;
 
-      // Si es IA Gemini, obtener la métrica
-      if (method === 'ia_gemini') {
-        metric = document.getElementById('metric').value;
-        if (!metric) {
-          alert('La métrica es obligatoria para el método IA Gemini.');
-          return;
-        }
+      if (method === 'ia_gemini' && !metric) {
+        alert('La métrica es obligatoria para el método IA Gemini.');
+        return;
       }
-
-      // Enviar los datos del formulario, incluyendo la métrica si es IA Gemini
-      const data = { idEvaluacion, method, threshold, metric };
-      console.log(data);
-
-      // Aquí agregarías la lógica para enviar los datos al servidor
+      console.log({ idEvaluacion: $('#revisionModal').data('idEvaluacion'), method, threshold, metric });
+      // Aquí agregas la lógica para enviar los datos al servidor
     };
   </script>
 {% endblock javascripts %}
