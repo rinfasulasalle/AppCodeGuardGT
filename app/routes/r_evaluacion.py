@@ -290,8 +290,6 @@ def make_review_ia_gemini(id_evaluacion):
     )
 
     response_text = ask_to_ia_google(prompt_total)
-
     if response_text is None:
         return jsonify({'message': 'La IA Gemini no pudo procesar la solicitud.'}), 500
-
     return jsonify({'result': response_text}), 200
