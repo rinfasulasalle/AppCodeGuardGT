@@ -98,7 +98,6 @@
         <small>${eval.descripcion}</small><br>
         <button class="btn btn-sm btn-primary mt-2" onclick="openRevisionModal(${eval.id_evaluacion})">Realizar Revisión</button>
       </div>`;
-
     const openRevisionModal = id => $('#revisionModal').data('idEvaluacion', id).modal('show');
     const updateThresholdLabel = value => document.getElementById('thresholdValue').textContent = parseFloat(value).toFixed(2);
 
