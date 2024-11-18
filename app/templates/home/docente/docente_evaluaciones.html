@@ -21,8 +21,8 @@
       </div>
     </section>
   </div>
-  
-  <!-- Modal de Revisión -->
+
+  <!-- Modal para seleccionar el método de revisión -->
   <div class="modal fade" id="revisionModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -55,14 +55,14 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="resetModal()">Cancelar</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="resetForm()">Cancelar</button>
           <button type="button" class="btn btn-primary" onclick="submitRevision()">Aplicar Revisión</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal para mostrar respuesta -->
+  <!-- Modal para mostrar la respuesta de la petición -->
   <div class="modal fade" id="responseModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -71,7 +71,7 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
         <div class="modal-body">
-          <p id="responseMessage"></p>
+          <div id="responseContent"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
@@ -79,7 +79,7 @@
       </div>
     </div>
   </div>
-  
+
 {% endblock content %}
 
 {% block javascripts %}
@@ -89,6 +89,7 @@
   <script>
     const base_url = 'http://62.72.11.15:5000/evaluacion';
 
+    // Cargar evaluaciones
     fetch("{{ url_for('evaluacion.get_evaluaciones_by_docente', dni_docente=current_user.dni) }}")
       .then(res => res.json())
       .then(data => {
@@ -116,72 +117,67 @@
           : '<div class="col-12"><p class="text-center">No hay cursos asociados a este docente.</p></div>';
       })
       .catch(() => document.getElementById('evaluaciones-list').innerHTML = '<div class="col-12"><p class="text-center text-danger">Error al cargar las evaluaciones.</p></div>');
-    
+
+    // Función para abrir el modal de revisión
     const openRevisionModal = id => $('#revisionModal').data('idEvaluacion', id).modal('show');
 
+    // Toggle del campo de la métrica para IA Gemini
     const toggleMetricField = () => {
       document.getElementById('metricField').style.display = document.querySelector('input[name="method"]:checked').value === 'ia_gemini' ? 'block' : 'none';
     };
 
+    // Actualizar el valor del threshold
     const updateThresholdLabel = value => document.getElementById('thresholdValue').textContent = parseFloat(value).toFixed(2);
 
+    // Función para enviar la revisión
     const submitRevision = () => {
       const form = document.getElementById('revisionForm');
       const method = form.method.value;
       const threshold = parseFloat(form.threshold.value);
       const metric = method === 'ia_gemini' ? form.metric.value : null;
-      const idEvaluacion = $('#revisionModal').data('idEvaluacion');
-      
+
       if (method === 'ia_gemini' && !metric) {
         alert('La métrica es obligatoria para el método IA Gemini.');
         return;
       }
 
-      const requestBody = method === 'tfidf'
-        ? { threshold }
-        : { metrica: metric, threshold };
+      const url = method === 'tfidf' ? 
+        `${base_url}/make_review_tf_idf/${$('#revisionModal').data('idEvaluacion')}` : 
+        `${base_url}/make_review_ia_gemini/${$('#revisionModal').data('idEvaluacion')}`;
 
-      const endpoint = method === 'tfidf' 
-        ? `${base_url}/make_review_tf_idf/${idEvaluacion}` 
-        : `${base_url}/make_review_ia_gemini/${idEvaluacion}`;
-      
-      fetch(endpoint, {
+      const payload = method === 'tfidf' ? 
+        { threshold } : 
+        { metrica: metric, threshold };
+
+      fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
       })
-        .then(response => response.json())
-        .then(data => {
-          displayResponse(data);
-        })
-        .catch(error => {
-          displayError('Error al procesar la revisión:');
-        });
+      .then(res => res.json())
+      .then(data => {
+        const responseContent = document.getElementById('responseContent');
+        if (data.error) {
+          responseContent.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        } else {
+          responseContent.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        $('#responseModal').modal('show');
+      })
+      .catch(() => {
+        const responseContent = document.getElementById('responseContent');
+        responseContent.innerHTML = '<div class="alert alert-danger">Error al realizar la revisión.</div>';
+        $('#responseModal').modal('show');
+      });
     };
 
-    const displayResponse = (data) => {
-      const responseMessage = document.getElementById('responseMessage');
-      if (data.error) {
-        responseMessage.textContent = `Error: ${data.error}`;
-        responseMessage.style.color = 'red';
-      } else {
-        responseMessage.textContent = JSON.stringify(data);
-        responseMessage.style.color = 'black';
-      }x
-      $('#responseModal').modal('show');
-    };
-
-    const displayError = (message) => {
-      const responseMessage = document.getElementById('responseMessage');
-      responseMessage.textContent = message;
-      responseMessage.style.color = 'red';
-      $('#responseModal').modal('show');
-    };
-
-    const resetModal = () => {
+    // Función para reiniciar el formulario
+    const resetForm = () => {
       document.getElementById('revisionForm').reset();
       document.getElementById('metricField').style.display = 'none';
       document.getElementById('thresholdValue').textContent = '0.80';
     };
   </script>
-{% endblock javascripts %}
+{% endblock %}
