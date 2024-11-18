@@ -56,7 +56,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="resetForm()">Cancelar</button>
-          <button type="button" class="btn btn-primary" onclick="submitRevision()">Aplicar Revisión</button>
+          <button type="button" class="btn btn-primary" id="applyRevisionButton" onclick="submitRevision()">Aplicar Revisión</button>
         </div>
       </div>
     </div>
@@ -64,7 +64,7 @@
 
   <!-- Modal para mostrar la respuesta de la petición -->
   <div class="modal fade" id="responseModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Respuesta de la Revisión</h5>
@@ -131,6 +131,11 @@
 
     // Función para enviar la revisión
     const submitRevision = () => {
+      // Deshabilitar el botón
+      const applyButton = document.getElementById('applyRevisionButton');
+      applyButton.disabled = true;
+      applyButton.textContent = 'Procesando...';
+
       const form = document.getElementById('revisionForm');
       const method = form.method.value;
       const threshold = parseFloat(form.threshold.value);
@@ -138,6 +143,9 @@
 
       if (method === 'ia_gemini' && !metric) {
         alert('La métrica es obligatoria para el método IA Gemini.');
+        // Habilitar el botón de nuevo si hay error
+        applyButton.disabled = false;
+        applyButton.textContent = 'Aplicar Revisión';
         return;
       }
 
@@ -166,14 +174,19 @@
         }
         $('#responseModal').modal('show');
       })
-      .catch(() => {
+      .catch(error => {
         const responseContent = document.getElementById('responseContent');
-        responseContent.innerHTML = '<div class="alert alert-danger">Error al realizar la revisión.</div>';
+        responseContent.innerHTML = `<div class="alert alert-danger">Hubo un error: ${error.message}</div>`;
         $('#responseModal').modal('show');
+      })
+      .finally(() => {
+        // Habilitar el botón después de recibir la respuesta
+        applyButton.disabled = false;
+        applyButton.textContent = 'Aplicar Revisión';
       });
     };
 
-    // Función para reiniciar el formulario
+    // Limpiar el formulario y cerrar el modal
     const resetForm = () => {
       document.getElementById('revisionForm').reset();
       document.getElementById('metricField').style.display = 'none';
