@@ -211,6 +211,8 @@ def make_review_tf_idf(id_evaluacion):
     # Verificar si existen códigos
     if not codigos:
         return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
+    if len(codigos)<2:
+        return jsonify({'message': 'Debe haber como minimo 2 códigos para comparar'}), 404
 
     # Formatear los datos para el verificador de plagio
     datos = [
@@ -265,6 +267,8 @@ def make_review_ia_gemini(id_evaluacion):
     # Verificar si existen códigos
     if not codigos:
         return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
+    if len(codigos)<2:
+        return jsonify({'message': 'Debe haber como minimo 2 códigos para comparar'}), 404
 
     # Formatear los datos para enviar a la IA
     datos = [
@@ -285,7 +289,7 @@ def make_review_ia_gemini(id_evaluacion):
     prompt_total = (
         f"{prompt_contexto}\n"
         f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} utilizando la métrica de {metrica}. "
-        "Determina si existe algún plagio en los códigos proporcionados, y proporciona un análisis detallado de coincidencias sospechosas.\n\n"
+        "Determina si existe algún plagio en los códigos proporcionados, y proporciona un análisis detallado de coincidencias sospechosas asdemás a manera de resumen muestralo en una tabla en ascci.\n\n"
         f"Códigos para evaluar:\n{datos}"
     )
 
