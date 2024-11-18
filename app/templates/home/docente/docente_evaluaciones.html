@@ -21,6 +21,8 @@
       </div>
     </section>
   </div>
+  
+  <!-- Modal de Revisión -->
   <div class="modal fade" id="revisionModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -53,12 +55,31 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="resetModal()">Cancelar</button>
           <button type="button" class="btn btn-primary" onclick="submitRevision()">Aplicar Revisión</button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal para mostrar respuesta -->
+  <div class="modal fade" id="responseModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Respuesta de la Revisión</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="responseMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 {% endblock content %}
 
 {% block javascripts %}
@@ -66,6 +87,8 @@
   <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/static/assets/js/adminlte.min.js"></script>
   <script>
+    const base_url = 'http://62.72.11.15:5000/evaluacion';
+
     fetch("{{ url_for('evaluacion.get_evaluaciones_by_docente', dni_docente=current_user.dni) }}")
       .then(res => res.json())
       .then(data => {
@@ -107,13 +130,58 @@
       const method = form.method.value;
       const threshold = parseFloat(form.threshold.value);
       const metric = method === 'ia_gemini' ? form.metric.value : null;
-
+      const idEvaluacion = $('#revisionModal').data('idEvaluacion');
+      
       if (method === 'ia_gemini' && !metric) {
         alert('La métrica es obligatoria para el método IA Gemini.');
         return;
       }
-      console.log({ idEvaluacion: $('#revisionModal').data('idEvaluacion'), method, threshold, metric });
-      // Aquí agregas la lógica para enviar los datos al servidor
+
+      const requestBody = method === 'tfidf'
+        ? { threshold }
+        : { metrica: metric, threshold };
+
+      const endpoint = method === 'tfidf' 
+        ? `${base_url}/make_review_tf_idf/${idEvaluacion}` 
+        : `${base_url}/make_review_ia_gemini/${idEvaluacion}`;
+      
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      })
+        .then(response => response.json())
+        .then(data => {
+          displayResponse(data);
+        })
+        .catch(error => {
+          displayError('Error al procesar la revisión:');
+        });
+    };
+
+    const displayResponse = (data) => {
+      const responseMessage = document.getElementById('responseMessage');
+      if (data.error) {
+        responseMessage.textContent = `Error: ${data.error}`;
+        responseMessage.style.color = 'red';
+      } else {
+        responseMessage.textContent = JSON.stringify(data);
+        responseMessage.style.color = 'black';
+      }x
+      $('#responseModal').modal('show');
+    };
+
+    const displayError = (message) => {
+      const responseMessage = document.getElementById('responseMessage');
+      responseMessage.textContent = message;
+      responseMessage.style.color = 'red';
+      $('#responseModal').modal('show');
+    };
+
+    const resetModal = () => {
+      document.getElementById('revisionForm').reset();
+      document.getElementById('metricField').style.display = 'none';
+      document.getElementById('thresholdValue').textContent = '0.80';
     };
   </script>
 {% endblock javascripts %}
