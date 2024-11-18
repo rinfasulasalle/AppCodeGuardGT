@@ -184,6 +184,7 @@ def get_evaluaciones_by_docente(dni_docente):
 
     return jsonify(response), 200
 
+# Ruta para realizar revision con metodo tf idf
 @evaluacion.route("/make_review_tf_idf/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
 def make_review_tf_idf(id_evaluacion):
