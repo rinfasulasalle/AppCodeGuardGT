@@ -64,7 +64,7 @@
 
   <!-- Modal para mostrar la respuesta de la petición -->
   <div class="modal fade" id="responseModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Resultado de la Revisión</h5>
@@ -174,21 +174,37 @@
             <div><strong>Threshold:</strong> ${data.threshold}</div>
             <div><strong>Plagio Detectado:</strong> ${data.plagiarism_detected ? 'Sí' : 'No'}</div>
             ${data.plagiarism_cases.length > 0 ? `
-              <div><strong>Casos de Plagio:</strong></div>
-              <ul>
-                ${data.plagiarism_cases.map(caso => `<li>${caso}</li>`).join('')}
-              </ul>
-            ` : ''}
+                <div><strong>Casos de Plagio:</strong></div>
+                <ul>
+                    ${data.plagiarism_cases.map(caso => `
+                        <li>
+                            <strong>Estudiantes Involucrados:</strong>
+                            <ul>
+                                <li><strong>Estudiante A:</strong> ${caso.codigo_a.estudiante.nombres} ${caso.codigo_a.estudiante.apellidos} (DNI: ${caso.codigo_a.estudiante.dni})</li>
+                                <li><strong>Estudiante B:</strong> ${caso.codigo_b.estudiante.nombres} ${caso.codigo_b.estudiante.apellidos} (DNI: ${caso.codigo_b.estudiante.dni})</li>
+                            </ul>
+                            <strong>URLs de Código:</strong>
+                            <ul>
+                                <li><a href="${caso.codigo_a.url_codigo}" target="_blank">Código A</a></li>
+                                <li><a href="${caso.codigo_b.url_codigo}" target="_blank">Código B</a></li>
+                            </ul>
+                            <strong>Score de Similitud:</strong> ${caso.similarity_score.toFixed(2)}
+                        </li>
+                    `).join('')}
+                </ul>
+            ` : `<div><strong>No se encontraron casos de plagio.</strong></div>`}
             <div><strong>Comparaciones:</strong></div>
             <ul>
-              ${data.comparisons.map(comp => `
-                <li>
-                  <strong>Comparación entre ${comp.codigo_a.estudiante.nombres} ${comp.codigo_a.estudiante.apellidos} y ${comp.codigo_b.estudiante.nombres} ${comp.codigo_b.estudiante.apellidos}</strong>
-                  <br><strong>Score:</strong> ${comp.similarity_score}
-                </li>
-              `).join('')}
+                ${data.comparisons.map(comp => `
+                    <li>
+                        <strong>Comparación entre:</strong>
+                        ${comp.codigo_a.estudiante.nombres} ${comp.codigo_a.estudiante.apellidos} 
+                        y ${comp.codigo_b.estudiante.nombres} ${comp.codigo_b.estudiante.apellidos}
+                        <br><strong>Score:</strong> ${comp.similarity_score.toFixed(2)}
+                    </li>
+                `).join('')}
             </ul>
-          `;
+        `;
         } else {
           responseContent.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
         }
