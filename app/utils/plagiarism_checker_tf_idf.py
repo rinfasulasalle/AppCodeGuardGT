@@ -68,8 +68,25 @@ def detect_plagiarism(data, threshold=0.8):
                     "similarity_score": round(similarity, 2)
                 })
 
-    # Ordenar los casos de plagio de mayor a menor similitud
-    plagiarism_cases.sort(key=lambda x: x['similarity_score'], reverse=True)
+    # Ordenar los casos de plagio por el puntaje de similitud, de mayor a menor
+    plagiarism_cases = sorted(plagiarism_cases, key=lambda x: x['similarity_score'], reverse=True)
+
+    # Ordenar las comparaciones por el puntaje de similitud, de mayor a menor
+    comparisons = [
+        {
+            "codigo_a": {
+                "id_codigo": data[i]["id_codigo"],
+                "estudiante": data[i]["estudiante"],
+            },
+            "codigo_b": {
+                "id_codigo": data[j]["id_codigo"],
+                "estudiante": data[j]["estudiante"],
+            },
+            "similarity_score": round(sim_matrix[i, j], 2)
+        }
+        for i in range(n) for j in range(i + 1, n)
+    ]
+    comparisons = sorted(comparisons, key=lambda x: x['similarity_score'], reverse=True)
 
     # Formatear la salida en diccionario
     result = {
@@ -77,20 +94,7 @@ def detect_plagiarism(data, threshold=0.8):
         "threshold": threshold,
         "plagiarism_detected": len(plagiarism_cases) > 0,
         "plagiarism_cases": plagiarism_cases,
-        "comparisons": [
-            {
-                "codigo_a": {
-                    "id_codigo": data[i]["id_codigo"],
-                    "estudiante": data[i]["estudiante"],
-                },
-                "codigo_b": {
-                    "id_codigo": data[j]["id_codigo"],
-                    "estudiante": data[j]["estudiante"],
-                },
-                "similarity_score": round(sim_matrix[i, j], 2)
-            }
-            for i in range(n) for j in range(i + 1, n)
-        ]
+        "comparisons": comparisons
     }
 
     return result  # Devuelve un diccionario, no un JSON
