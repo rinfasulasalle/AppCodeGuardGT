@@ -71,7 +71,32 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
         <div class="modal-body">
-          <div id="responseContent"></div>
+          <div class="report-container">
+            <!-- Encabezado del reporte -->
+            <div class="report-header" style="padding: 20px; border-bottom: 2px solid #007bff; font-family: Arial, sans-serif;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <!-- Información del usuario -->
+                  <td style="width: 70%; text-align: left; vertical-align: top; color: #333;">
+                    <h2 style="margin: 0; color: #007bff;">Reporte de Revisión de Plagio</h2>
+                    <p style="margin: 5px 0; font-size: 14px;">
+                      <strong>Usuario:</strong> {{ current_user.nombres }} {{ current_user.apellidos }} (DNI: {{ current_user.dni }})<br>
+                      <strong>IP:</strong> <span id="user-ip">---</span><br>
+                      <strong>Fecha:</strong> <span id="current-datetime">---</span><br>
+                      <strong>Curso:</strong> <span id="curso-actual">---</span><br>
+                      <strong>Evaluación:</strong> <span id="evaluacion-actual">---</span>
+                    </p>
+                  </td>
+                  <!-- Logo -->
+                  <td style="width: 30%; text-align: right; vertical-align: top;">
+                    <img src="/static/assets/img/codeguard_logo.png" alt="CodeGuard Logo" style="width: 150px; margin: 0;">
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <!-- Contenido dinámico del reporte -->
+            <div id="responseContent"></div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>

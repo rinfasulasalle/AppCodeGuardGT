@@ -3,6 +3,14 @@ from sklearn.metrics.pairwise import cosine_similarity
 import re
 import json
 
+# Lista de Stop Words SQL ampliada
+stop_words_sql = [
+    'select', 'from', 'where', 'and', 'or', 'insert', 'into', 'values', 'update', 'set', 'delete', 'join', 
+    'inner', 'left', 'right', 'full', 'outer', 'on', 'in', 'not', 'is', 'null', 'between', 'like', 'group', 
+    'by', 'having', 'order', 'asc', 'desc', 'limit', 'distinct', 'as', 'cast', 'case', 'when', 'then', 'else', 
+    'end', 'between', 'exists', 'all', 'any', 'some', 'union', 'intersect', 'except', 'having', 'count', 'avg', 
+    'sum', 'min', 'max', 'and', 'from', 'to', 'with', 'for', 'as', 'not', 'in', 'like', 'match', 'on', 'for', 'and'
+]
 
 ### 1. PREPROCESAMIENTO DEL CÓDIGO SQL
 def preprocess_sql(code):
@@ -15,7 +23,7 @@ def preprocess_sql(code):
 ### 2. APLICAR TF-IDF
 def calculate_tfidf_matrix(codes):
     """Calcula la matriz TF-IDF para una lista de códigos SQL."""
-    vectorizer = TfidfVectorizer(ngram_range=(1, 2), stop_words=['select', 'from', 'where', 'and'])
+    vectorizer = TfidfVectorizer(ngram_range=(1, 2), stop_words=stop_words_sql)
     tfidf_matrix = vectorizer.fit_transform(codes)
     return tfidf_matrix
 
@@ -59,6 +67,9 @@ def detect_plagiarism(data, threshold=0.8):
                     },
                     "similarity_score": round(similarity, 2)
                 })
+
+    # Ordenar los casos de plagio de mayor a menor similitud
+    plagiarism_cases.sort(key=lambda x: x['similarity_score'], reverse=True)
 
     # Formatear la salida en diccionario
     result = {
