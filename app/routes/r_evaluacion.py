@@ -298,3 +298,44 @@ def make_review_ia_gemini(id_evaluacion):
     if response_text is None:
         return jsonify({'message': 'La IA Gemini no pudo procesar la solicitud.'}), 500
     return jsonify({'result': response_text}), 200
+
+# Obtener todos los códigos asociados a una evaluación
+@evaluacion.route("/get_codigos_by_evaluacion/<int:id_evaluacion>", methods=['GET'])
+@handle_errors
+def get_codigos_by_evaluacion(id_evaluacion):
+    # Obtener los códigos asociados a la evaluación usando el id_evaluacion
+    codigos = (
+        db.session.query(
+            Codigo.id_codigo,
+            Codigo.url_codigo,
+            #Codigo.codigo_sql,
+            Usuario.dni,
+            Usuario.nombres,
+            Usuario.apellidos
+        )
+        .join(Matricula, Codigo.id_matricula == Matricula.id_matricula)
+        .join(Usuario, Matricula.dni_estudiante == Usuario.dni)
+        .filter(Codigo.id_evaluacion == id_evaluacion)
+        .all()
+    )
+
+    # Verificar si se encontraron códigos
+    if not codigos:
+        return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
+
+    # Formatear los datos para la respuesta
+    codigos_list = [
+        {
+            'id_codigo': codigo.id_codigo,
+            'url_codigo': codigo.url_codigo,
+            #'codigo_sql': codigo.codigo_sql,
+            'estudiante': {
+                'dni': codigo.dni,
+                'nombres': codigo.nombres,
+                'apellidos': codigo.apellidos
+            }
+        }
+        for codigo in codigos
+    ]
+
+    return jsonify(codigos_list), 200
