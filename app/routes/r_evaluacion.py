@@ -1,4 +1,6 @@
 from flask import Blueprint, jsonify, request
+from datetime import datetime
+import os
 from models.evaluacion import Evaluacion
 from models.curso import Curso
 from models.docente import Docente
@@ -246,8 +248,18 @@ def make_review_ia_gemini(id_evaluacion):
     threshold = data.get('threshold')
     metrica = data.get('metrica')
 
+    # Validar los parámetros obligatorios
     if threshold is None or not metrica:
         return jsonify({'message': '"threshold" y "metrica" son obligatorios.'}), 400
+
+    # Obtener el dni_docente relacionado con el id_curso de la evaluación
+    dni_docente = db.session.query(Curso.dni_docente) \
+                            .join(Evaluacion, Evaluacion.id_curso == Curso.id_curso) \
+                            .filter(Evaluacion.id_evaluacion == id_evaluacion) \
+                            .first()
+
+    if not dni_docente:
+        return jsonify({'message': 'No se encontró al docente para esta evaluación.'}), 404
 
     # Obtener los códigos entregados por la evaluación
     codigos = (
@@ -268,8 +280,8 @@ def make_review_ia_gemini(id_evaluacion):
     # Verificar si existen códigos
     if not codigos:
         return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
-    if len(codigos)<2:
-        return jsonify({'message': 'Debe haber como minimo 2 códigos para comparar'}), 404
+    if len(codigos) < 2:
+        return jsonify({'message': 'Debe haber como mínimo 2 códigos para comparar'}), 404
 
     # Formatear los datos para enviar a la IA
     datos = [
@@ -290,14 +302,35 @@ def make_review_ia_gemini(id_evaluacion):
     prompt_total = (
         f"{prompt_contexto}\n"
         f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} utilizando la métrica de {metrica}. "
-        "Determina si existe algún plagio en los códigos proporcionados, y proporciona un análisis detallado de coincidencias sospechosas asdemás a manera de resumen muestralo en una tabla en ascci.\n\n"
+        "Determina si existe algún plagio en los códigos proporcionados, y proporciona un análisis detallado de coincidencias sospechosas. "
+        "Además, a manera de resumen, muéstralo en una tabla en ASCII.\n\n"
         f"Códigos para evaluar:\n{datos}"
     )
 
+    # Interactuar con la IA Gemini
     response_text = ask_to_ia_google(prompt_total)
     if response_text is None:
         return jsonify({'message': 'La IA Gemini no pudo procesar la solicitud.'}), 500
-    return jsonify({'result': response_text}), 200
+
+    # Obtener la fecha y hora actual para el nombre del archivo
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    
+    # Nombre del archivo .md basado en el dni_docente y la fecha/hora
+    filename = f"reporte_{dni_docente[0]}_{timestamp}.md"
+    filepath = os.path.join('reports', filename)
+
+    # Guardar la respuesta de la IA en el archivo .md
+    try:
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.write(f"# Reporte de Evaluación\n\n")
+            file.write(f"**Evaluación ID**: {id_evaluacion}\n\n")
+            file.write(f"**Resultado de la IA Gemini**:\n\n{response_text}\n")
+    except Exception as e:
+        return jsonify({'message': f'Error al guardar el archivo: {str(e)}'}), 500
+
+    # Confirmar que el archivo se ha creado exitosamente
+    return jsonify({'message': f'Archivo .md creado exitosamente: {filename}'}), 200
+
 
 # Obtener todos los códigos asociados a una evaluación
 @evaluacion.route("/get_codigos_by_evaluacion/<int:id_evaluacion>", methods=['GET'])
