@@ -36,7 +36,7 @@ def generar_correo_unico(nombres, apellidos):
     apellidos_normalizado = normalizar_texto(apellidos)
 
     # Obtener iniciales de los nombres y apellidos
-    correo_base = f"{nombres_normalizado[0]}{apellidos_normalizado.split()[0]}{apellidos_normalizado.split()[1][0]}@codeguard.pe"
+    correo_base = f"{nombres_normalizado[0]}{apellidos_normalizado.split()[0]}{apellidos_normalizado.split()[1][0]}@ulasalle.edu.pe"
 
     # Verificar si ya existe el correo en la base de datos, en caso de homonimos
     contador = 1
