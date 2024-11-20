@@ -11,6 +11,7 @@ from utils.db import db
 from utils.error_handler import handle_errors
 from utils.plagiarism_checker_tf_idf import plagiarism_checker
 from utils.google_ai import GoogleGenerativeAI, ask_to_ia_google
+from utils.smtpSenderEmail import SmtpSenderEmail
 
 evaluacion = Blueprint('evaluacion', __name__)
 
@@ -252,14 +253,18 @@ def make_review_ia_gemini(id_evaluacion):
     if threshold is None or not metrica:
         return jsonify({'message': '"threshold" y "metrica" son obligatorios.'}), 400
 
-    # Obtener el dni_docente relacionado con el id_curso de la evaluación
-    dni_docente = db.session.query(Curso.dni_docente) \
-                            .join(Evaluacion, Evaluacion.id_curso == Curso.id_curso) \
-                            .filter(Evaluacion.id_evaluacion == id_evaluacion) \
-                            .first()
+    # Obtener el dni_docente y correo del docente
+    docente_info = db.session.query(Curso.dni_docente, Usuario.correo) \
+                             .join(Docente, Docente.dni_usuario == Curso.dni_docente) \
+                             .join(Usuario, Usuario.dni == Docente.dni_usuario) \
+                             .join(Evaluacion, Evaluacion.id_curso == Curso.id_curso) \
+                             .filter(Evaluacion.id_evaluacion == id_evaluacion) \
+                             .first()
 
-    if not dni_docente:
-        return jsonify({'message': 'No se encontró al docente para esta evaluación.'}), 404
+    if not docente_info:
+        return jsonify({'message': 'No se encontró al docente o correo asociado a esta evaluación.'}), 404
+
+    dni_docente, correo_docente = docente_info
 
     # Obtener los códigos entregados por la evaluación
     codigos = (
@@ -316,7 +321,7 @@ def make_review_ia_gemini(id_evaluacion):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     
     # Nombre del archivo .md basado en el dni_docente y la fecha/hora
-    filename = f"reporte_{dni_docente[0]}_{timestamp}.md"
+    filename = f"reporte_{dni_docente}_{timestamp}.md"
     filepath = os.path.join('reports', filename)
 
     # Guardar la respuesta de la IA en el archivo .md
@@ -328,8 +333,24 @@ def make_review_ia_gemini(id_evaluacion):
     except Exception as e:
         return jsonify({'message': f'Error al guardar el archivo: {str(e)}'}), 500
 
-    # Confirmar que el archivo se ha creado exitosamente
-    return jsonify({'message': f'Archivo .md creado exitosamente: {filename}'}), 200
+    # Crear el mensaje para el correo
+    mensaje = (
+        f"Se ha generado un reporte de evaluación para la evaluación ID: {id_evaluacion}.\n"
+        f"Fecha del reporte: {datetime.now().strftime('%d-%m-%Y')}\n\n"
+        f"Este correo contiene el reporte generado por la IA Gemini.\n\n"
+        f"Adjunto encontrarás el archivo con el análisis del plagio."
+    )
+
+    # Enviar el correo con el archivo .md adjunto
+    smtp = SmtpSenderEmail()  # Instanciamos el sender de correo
+    email_sent = smtp.send_email(correo_docente, mensaje, filepath)
+
+    # Verificar si el correo se envió correctamente
+    if not email_sent:
+        return jsonify({'message': 'Hubo un error al enviar el correo.'}), 500
+
+    # Confirmar que el archivo se ha creado y el correo enviado
+    return jsonify({'message': f'Correo enviado exitosamente al docente: {correo_docente}. El archivo {filename} ha sido adjuntado.'}), 200
 
 
 # Obtener todos los códigos asociados a una evaluación
