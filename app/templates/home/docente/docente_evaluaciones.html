@@ -131,7 +131,7 @@
                     <h6>Evaluaciones:</h6>
                     ${curso.evaluaciones.length ? curso.evaluaciones.map(eval => `
                       <div class="evaluacion-item">
-                        <strong>${eval.nombre}</strong><br>
+                        <strong>${eval.nombre}(ID:${eval.id_evaluacion})</strong><br>
                         <small>${eval.descripcion}</small><br>
                         <button class="btn btn-sm btn-primary mt-2" onclick="openRevisionModal(${eval.id_evaluacion})">Realizar Revisión</button>
                       </div>`).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
