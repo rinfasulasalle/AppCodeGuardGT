@@ -119,44 +119,37 @@
       .then(res => res.json())
       .then(data => {
         const evaluacionesList = document.getElementById('evaluaciones-list');
-        evaluacionesList.innerHTML = data.cursos?.length 
-          ? data.cursos.map(curso => `
-              <div class="col-md-6 col-lg-4">
-                <div class="card shadow-sm">
-                  <div class="card-header bg-${['primary', 'success', 'info', 'warning', 'danger'][Math.floor(Math.random() * 5)]} text-white">
-                    <h5 class="card-title mb-0">${curso.curso.nombre}</h5>
-                    <small>ID Curso: ${curso.curso.id_curso}</small>
-                  </div>
-                  <div class="card-body">
-                    <h6>Evaluaciones:</h6>
-                    ${curso.evaluaciones.length ? curso.evaluaciones.map(eval => `
-                      <div class="evaluacion-item">
-                        <strong>${eval.nombre}(ID:${eval.id_evaluacion})</strong><br>
-                        <small>${eval.descripcion}</small><br>
-                        <button class="btn btn-sm btn-primary mt-2" onclick="openRevisionModal(${eval.id_evaluacion})">Realizar Revisión</button>
-                      </div>`).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
-                  </div>
-                </div>
+        evaluacionesList.innerHTML = data.cursos?.length ? data.cursos.map(curso => `
+          <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm">
+              <div class="card-header bg-${['primary', 'success', 'info', 'warning', 'danger'][Math.floor(Math.random() * 5)]} text-white">
+                <h5 class="card-title mb-0">${curso.curso.nombre}</h5><small>ID Curso: ${curso.curso.id_curso}</small>
               </div>
-            `).join('') 
-          : '<div class="col-12"><p class="text-center">No hay cursos asociados a este docente.</p></div>';
+              <div class="card-body">
+                <h6>Evaluaciones:</h6>
+                ${curso.evaluaciones.length ? curso.evaluaciones.map(eval => `
+                  <div class="evaluacion-item">
+                    <strong>${eval.nombre}(ID:${eval.id_evaluacion})</strong><br>
+                    <small>${eval.descripcion}</small><br>
+                    <button class="btn btn-sm btn-primary mt-2" onclick="openRevisionModal(${eval.id_evaluacion})">Realizar Revisión</button>
+                  </div>`).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
+              </div>
+            </div>
+          </div>`).join('') : '<div class="col-12"><p class="text-center">No hay cursos asociados a este docente.</p></div>';
       })
       .catch(() => document.getElementById('evaluaciones-list').innerHTML = '<div class="col-12"><p class="text-center text-danger">Error al cargar las evaluaciones.</p></div>');
 
-    // Función para abrir el modal de revisión
+    // Abrir modal de revisión
     const openRevisionModal = id => $('#revisionModal').data('idEvaluacion', id).modal('show');
 
-    // Toggle del campo de la métrica para IA Gemini
-    const toggleMetricField = () => {
-      document.getElementById('metricField').style.display = document.querySelector('input[name="method"]:checked').value === 'ia_gemini' ? 'block' : 'none';
-    };
+    // Toggle de métrica para IA Gemini
+    const toggleMetricField = () => document.getElementById('metricField').style.display = document.querySelector('input[name="method"]:checked').value === 'ia_gemini' ? 'block' : 'none';
 
-    // Actualizar el valor del threshold
+    // Actualizar valor del threshold
     const updateThresholdLabel = value => document.getElementById('thresholdValue').textContent = parseFloat(value).toFixed(2);
 
-    // Función para enviar la revisión
+    // Enviar revisión
     const submitRevision = () => {
-      // Deshabilitar el botón
       const applyButton = document.getElementById('applyRevisionButton');
       applyButton.disabled = true;
       applyButton.textContent = 'Procesando...';
@@ -168,76 +161,48 @@
 
       if (method === 'ia_gemini' && !metric) {
         alert('La métrica es obligatoria para el método IA Gemini.');
-        // Habilitar el botón de nuevo si hay error
         applyButton.disabled = false;
         applyButton.textContent = 'Aplicar Revisión';
         return;
       }
 
-      const url = method === 'tfidf' ? 
-        `${base_url}/make_review_tf_idf/${$('#revisionModal').data('idEvaluacion')}` : 
-        `${base_url}/make_review_ia_gemini/${$('#revisionModal').data('idEvaluacion')}`;
-
-      const payload = method === 'tfidf' ? 
-        { threshold } : 
-        { metrica: metric, threshold };
+      const url = `${base_url}/make_review_${method === 'tfidf' ? 'tf_idf' : 'ia_gemini'}/${$('#revisionModal').data('idEvaluacion')}`;
+      const payload = method === 'tfidf' ? { threshold } : { metrica: metric, threshold };
 
       fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
       .then(res => res.json())
       .then(data => {
         const responseContent = document.getElementById('responseContent');
-
         if (method === 'tfidf') {
           responseContent.innerHTML = `
             <div><strong>Total de Códigos Analizados:</strong> ${data.total_codes_analyzed}</div>
             <div><strong>Threshold:</strong> ${data.threshold}</div>
             <div><strong>Plagio Detectado:</strong> ${data.plagiarism_detected ? 'Sí' : 'No'}</div>
-            ${data.plagiarism_cases.length > 0 ? `
-                <div><strong>Casos de Plagio:</strong></div>
+            ${data.plagiarism_cases.length ? `<div><strong>Casos de Plagio:</strong></div><ul>${data.plagiarism_cases.map(caso => `
+              <li>
+                <strong>Estudiantes Involucrados:</strong>
                 <ul>
-                    ${data.plagiarism_cases.map(caso => `
-                        <li>
-                            <strong>Estudiantes Involucrados:</strong>
-                            <ul>
-                                <li><strong>Estudiante A:</strong> ${caso.codigo_a.estudiante.nombres} ${caso.codigo_a.estudiante.apellidos} (DNI: ${caso.codigo_a.estudiante.dni})</li>
-                                <li><strong>Estudiante B:</strong> ${caso.codigo_b.estudiante.nombres} ${caso.codigo_b.estudiante.apellidos} (DNI: ${caso.codigo_b.estudiante.dni})</li>
-                            </ul>
-                            <strong>URLs de Código:</strong>
-                            <ul>
-                                <li><a href="${caso.codigo_a.url_codigo}" target="_blank">Código A</a></li>
-                                <li><a href="${caso.codigo_b.url_codigo}" target="_blank">Código B</a></li>
-                            </ul>
-                            <strong>Score de Similitud:</strong> ${caso.similarity_score.toFixed(2)}
-                        </li>
-                    `).join('')}
+                  <li><strong>Estudiante A:</strong> ${caso.codigo_a.estudiante.nombres} ${caso.codigo_a.estudiante.apellidos} (DNI: ${caso.codigo_a.estudiante.dni})</li>
+                  <li><strong>Estudiante B:</strong> ${caso.codigo_b.estudiante.nombres} ${caso.codigo_b.estudiante.apellidos} (DNI: ${caso.codigo_b.estudiante.dni})</li>
                 </ul>
-            ` : `<div><strong>No se encontraron casos de plagio.</strong></div>`}
-            <div><strong>Comparaciones:</strong></div>
-            <ul>
-                ${data.comparisons.map(comp => `
-                    <li>
-                        <strong>Comparación entre:</strong>
-                        ${comp.codigo_a.estudiante.nombres} ${comp.codigo_a.estudiante.apellidos} 
-                        y ${comp.codigo_b.estudiante.nombres} ${comp.codigo_b.estudiante.apellidos}
-                        <br><strong>Score:</strong> ${comp.similarity_score.toFixed(2)}
-                    </li>
-                `).join('')}
-            </ul>
-        `;
+                <strong>URLs de Código:</strong>
+                <ul><li><a href="${caso.codigo_a.url_codigo}" target="_blank">Código A</a></li><li><a href="${caso.codigo_b.url_codigo}" target="_blank">Código B</a></li></ul>
+                <strong>Score de Similitud:</strong> ${caso.similarity_score.toFixed(2)}
+              </li>`).join('')}</ul>` : '<div><strong>No se encontraron casos de plagio.</strong></div>'}
+            <div><strong>Comparaciones:</strong></div><ul>${data.comparisons.map(comp => `
+              <li><strong>Comparación entre:</strong> ${comp.codigo_a.estudiante.nombres} ${comp.codigo_a.estudiante.apellidos} y ${comp.codigo_b.estudiante.nombres} ${comp.codigo_b.estudiante.apellidos}
+              <br><strong>Score:</strong> ${comp.similarity_score.toFixed(2)}</li>`).join('')}</ul>`;
         } else {
           responseContent.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
         }
         $('#responseModal').modal('show');
       })
       .catch(error => {
-        const responseContent = document.getElementById('responseContent');
-        responseContent.innerHTML = `<div class="alert alert-danger">Hubo un error: ${error.message}</div>`;
+        document.getElementById('responseContent').innerHTML = `<div class="alert alert-danger">Hubo un error: ${error.message}</div>`;
         $('#responseModal').modal('show');
       })
       .finally(() => {
@@ -246,7 +211,7 @@
       });
     };
 
-    // Limpiar el formulario y cerrar el modal
+    // Limpiar formulario y cerrar modal
     const resetForm = () => {
       document.getElementById('revisionForm').reset();
       document.getElementById('metricField').style.display = 'none';
