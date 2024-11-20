@@ -242,12 +242,12 @@ def make_review_tf_idf(id_evaluacion):
 def make_review_ia_gemini(id_evaluacion):
     # Obtener el prompt, threshold y métrica del cuerpo de la solicitud
     data = request.json
-    prompt_contexto = data.get('prompt_contexto', "Eres un experto en bases de datos SQL para MySQL.")
+    prompt_contexto = "Eres un experto en bases de datos SQL para MySQL."
     threshold = data.get('threshold')
     metrica = data.get('metrica')
 
-    if not prompt_contexto or threshold is None or not metrica:
-        return jsonify({'message': 'El "prompt_contexto", "threshold" y "metrica" son obligatorios.'}), 400
+    if threshold is None or not metrica:
+        return jsonify({'message': '"threshold" y "metrica" son obligatorios.'}), 400
 
     # Obtener los códigos entregados por la evaluación
     codigos = (
