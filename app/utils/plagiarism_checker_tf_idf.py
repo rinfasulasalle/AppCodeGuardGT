@@ -77,10 +77,12 @@ def detect_plagiarism(data, threshold=0.8):
             "codigo_a": {
                 "id_codigo": data[i]["id_codigo"],
                 "estudiante": data[i]["estudiante"],
+                "url_codigo": data[i]["url_codigo"]
             },
             "codigo_b": {
                 "id_codigo": data[j]["id_codigo"],
                 "estudiante": data[j]["estudiante"],
+                "url_codigo": data[j]["url_codigo"]
             },
             "similarity_score": round(sim_matrix[i, j], 2)
         }

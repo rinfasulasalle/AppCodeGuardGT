@@ -176,26 +176,88 @@
       .then(res => res.json())
       .then(data => {
         const responseContent = document.getElementById('responseContent');
+        let currentPage = 1;
+        const rowsPerPage = 15;
+
+        const changePage = (page) => {
+          if (page < 1 || page > totalPages) return;
+          currentPage = page;
+          renderTable(page);
+        };
+
         if (method === 'tfidf') {
-          responseContent.innerHTML = `
-            <div><strong>Total de Códigos Analizados:</strong> ${data.total_codes_analyzed}</div>
-            <div><strong>Threshold:</strong> ${data.threshold}</div>
-            <div><strong>Plagio Detectado:</strong> ${data.plagiarism_detected ? 'Sí' : 'No'}</div>
-            ${data.plagiarism_cases.length ? `<div><strong>Casos de Plagio:</strong></div><ul>${data.plagiarism_cases.map(caso => `
-              <li>
-                <strong>Estudiantes Involucrados:</strong>
-                <ul>
-                  <li><strong>Estudiante A:</strong> ${caso.codigo_a.estudiante.nombres} ${caso.codigo_a.estudiante.apellidos} (DNI: ${caso.codigo_a.estudiante.dni})</li>
-                  <li><strong>Estudiante B:</strong> ${caso.codigo_b.estudiante.nombres} ${caso.codigo_b.estudiante.apellidos} (DNI: ${caso.codigo_b.estudiante.dni})</li>
-                </ul>
-                <strong>URLs de Código:</strong>
-                <ul><li><a href="${caso.codigo_a.url_codigo}" target="_blank">Código A</a></li><li><a href="${caso.codigo_b.url_codigo}" target="_blank">Código B</a></li></ul>
-                <strong>Score de Similitud:</strong> ${caso.similarity_score.toFixed(2)}
-              </li>`).join('')}</ul>` : '<div><strong>No se encontraron casos de plagio.</strong></div>'}
-            <div><strong>Comparaciones:</strong></div><ul>${data.comparisons.map(comp => `
-              <li><strong>Comparación entre:</strong> ${comp.codigo_a.estudiante.nombres} ${comp.codigo_a.estudiante.apellidos} y ${comp.codigo_b.estudiante.nombres} ${comp.codigo_b.estudiante.apellidos}
-              <br><strong>Score:</strong> ${comp.similarity_score.toFixed(2)}</li>`).join('')}</ul>`;
-        } else {
+          const comparisons = data.comparisons;
+          const totalPages = Math.ceil(comparisons.length / rowsPerPage);
+
+          const renderTable = (page) => {
+            const startIndex = (page - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, comparisons.length);
+            const paginatedComparisons = comparisons.slice(startIndex, endIndex);
+
+            const tableRows = paginatedComparisons.map(comp => `
+              <tr>
+                <td>${comp.codigo_a.estudiante.nombres} ${comp.codigo_a.estudiante.apellidos}</td>
+                <td>${comp.codigo_b.estudiante.nombres} ${comp.codigo_b.estudiante.apellidos}</td>
+                <td><a href="${comp.codigo_a.url_codigo}" target="_blank">Código A</a></td>
+                <td><a href="${comp.codigo_b.url_codigo}" target="_blank">Código B</a></td>
+                <td>${comp.similarity_score.toFixed(2)}</td>
+              </tr>
+            `).join('');
+
+            responseContent.innerHTML = `
+              <div><strong>Total de Códigos Analizados:</strong> ${data.total_codes_analyzed}</div>
+              <div><strong>Threshold:</strong> ${data.threshold}</div>
+              <div><strong>Plagio Detectado:</strong> ${data.plagiarism_detected ? 'Sí' : 'No'}</div>
+              ${data.plagiarism_cases.length ? `
+                <div><strong>Casos de Plagio:</strong></div>
+                <ul>${data.plagiarism_cases.map(caso => `
+                  <li>
+                    <strong>Estudiantes Involucrados:</strong>
+                    <ul>
+                      <li><strong>Estudiante A:</strong> ${caso.codigo_a.estudiante.nombres} ${caso.codigo_a.estudiante.apellidos} (DNI: ${caso.codigo_a.estudiante.dni})</li>
+                      <li><strong>Estudiante B:</strong> ${caso.codigo_b.estudiante.nombres} ${caso.codigo_b.estudiante.apellidos} (DNI: ${caso.codigo_b.estudiante.dni})</li>
+                    </ul>
+                    <strong>URLs de Código:</strong>
+                    <ul><li><a href="${caso.codigo_a.url_codigo}" target="_blank">Código A</a></li><li><a href="${caso.codigo_b.url_codigo}" target="_blank">Código B</a></li></ul>
+                    <strong>Score de Similitud:</strong> ${caso.similarity_score.toFixed(2)}
+                  </li>`).join('')}</ul>` : '<div><strong>No se encontraron casos de plagio.</strong></div>'}
+              
+              <div><strong>Comparaciones:</strong></div>
+              <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                  <thead>
+                    <tr>
+                      <th>Estudiante A</th>
+                      <th>Estudiante B</th>
+                      <th>Código A</th>
+                      <th>Código B</th>
+                      <th>Score de Similitud</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${tableRows}
+                  </tbody>
+                </table>
+              </div>
+              <div class="pagination-container">
+                <div>Showing ${startIndex + 1} to ${endIndex} of ${comparisons.length}</div>
+                <nav>
+                  <ul class="pagination">
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                      <button class="page-link" onclick="changePage(${currentPage - 1})">Previous</button>
+                    </li>
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                      <button class="page-link" onclick="changePage(${currentPage + 1})">Next</button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            `;
+          };
+
+          renderTable(currentPage);
+        }
+        else {
           responseContent.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
         }
         $('#responseModal').modal('show');
