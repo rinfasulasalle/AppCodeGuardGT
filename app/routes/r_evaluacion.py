@@ -228,38 +228,25 @@ def get_codigos_by_evaluacion(id_evaluacion):
 
     return jsonify(codigos_list), 200
 
-# Ruta para realizar revision con metodo tf idf
+# Ruta para realizar revisión de códigos usando el método TF-IDF
 @evaluacion.route("/make_review_tf_idf/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
 def make_review_tf_idf(id_evaluacion):
-    # Verificar si el parámetro 'threshold' está presente en la solicitud
     threshold = request.json.get('threshold')
-    if threshold is None:
-        return jsonify({'message': 'El parámetro "threshold" es obligatorio.'}), 400
 
     # Obtener los códigos entregados por la evaluación
-    codigos = (
-        db.session.query(
-            Codigo.id_codigo,
-            Codigo.url_codigo,
-            Codigo.codigo_sql,
-            Usuario.dni,
-            Usuario.nombres,
-            Usuario.apellidos
-        )
-        .join(Matricula, Codigo.id_matricula == Matricula.id_matricula)
-        .join(Usuario, Matricula.dni_estudiante == Usuario.dni)
-        .filter(Codigo.id_evaluacion == id_evaluacion)
-        .all()
-    )
+    codigos = db.session.query(
+        Codigo.id_codigo,
+        Codigo.url_codigo,
+        Codigo.codigo_sql,
+        Usuario.dni,
+        Usuario.nombres,
+        Usuario.apellidos
+    ).join(Matricula, Codigo.id_matricula == Matricula.id_matricula) \
+     .join(Usuario, Matricula.dni_estudiante == Usuario.dni) \
+     .filter(Codigo.id_evaluacion == id_evaluacion).all()
 
-    # Verificar si existen códigos
-    if not codigos:
-        return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
-    if len(codigos)<2:
-        return jsonify({'message': 'Debe haber como minimo 2 códigos para comparar'}), 404
-
-    # Formatear los datos para el verificador de plagio
+    # Preparar los datos para el análisis
     datos = [
         {
             'id_codigo': codigo.id_codigo,
@@ -274,62 +261,33 @@ def make_review_tf_idf(id_evaluacion):
         for codigo in codigos
     ]
 
-    # Verificar el plagio con el threshold proporcionado
+    # Ejecutar el análisis de plagio
     result = plagiarism_checker(datos, threshold)
 
-    # Devolver el resultado como JSON
-    return jsonify("result"), 200
+    # Devolver el resultado
+    return jsonify({'result': result}), 200
 
-# Ruta para interactuar con la IA
+# Ruta para realizar revisión de códigos usando IA Gemini
 @evaluacion.route("/make_review_ia_gemini/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
 def make_review_ia_gemini(id_evaluacion):
-    # Obtener el prompt, threshold y métrica del cuerpo de la solicitud
     data = request.json
+    threshold, metrica = data['threshold'], data['metrica']
     prompt_contexto = "Eres un experto en bases de datos SQL para MySQL."
-    threshold = data.get('threshold')
-    metrica = data.get('metrica')
-
-    # Validar los parámetros obligatorios
-    if threshold is None or not metrica:
-        return jsonify({'message': '"threshold" y "metrica" son obligatorios.'}), 400
-
-    # Obtener el dni_docente y correo del docente
-    docente_info = db.session.query(Curso.dni_docente, Usuario.correo) \
-                             .join(Docente, Docente.dni_usuario == Curso.dni_docente) \
-                             .join(Usuario, Usuario.dni == Docente.dni_usuario) \
-                             .join(Evaluacion, Evaluacion.id_curso == Curso.id_curso) \
-                             .filter(Evaluacion.id_evaluacion == id_evaluacion) \
-                             .first()
-
-    if not docente_info:
-        return jsonify({'message': 'No se encontró al docente o correo asociado a esta evaluación.'}), 404
-
-    dni_docente, correo_docente = docente_info
 
     # Obtener los códigos entregados por la evaluación
-    codigos = (
-        db.session.query(
-            Codigo.id_codigo,
-            Codigo.url_codigo,
-            Codigo.codigo_sql,
-            Usuario.dni,
-            Usuario.nombres,
-            Usuario.apellidos
-        )
-        .join(Matricula, Codigo.id_matricula == Matricula.id_matricula)
-        .join(Usuario, Matricula.dni_estudiante == Usuario.dni)
-        .filter(Codigo.id_evaluacion == id_evaluacion)
-        .all()
-    )
+    codigos = db.session.query(
+        Codigo.id_codigo,
+        Codigo.url_codigo,
+        Codigo.codigo_sql,
+        Usuario.dni,
+        Usuario.nombres,
+        Usuario.apellidos
+    ).join(Matricula, Codigo.id_matricula == Matricula.id_matricula) \
+     .join(Usuario, Matricula.dni_estudiante == Usuario.dni) \
+     .filter(Codigo.id_evaluacion == id_evaluacion).all()
 
-    # Verificar si existen códigos
-    if not codigos:
-        return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
-    if len(codigos) < 2:
-        return jsonify({'message': 'Debe haber como mínimo 2 códigos para comparar'}), 404
-
-    # Formatear los datos para enviar a la IA
+    # Crear el prompt para la IA
     datos = [
         {
             'id_codigo': codigo.id_codigo,
@@ -343,52 +301,13 @@ def make_review_ia_gemini(id_evaluacion):
         }
         for codigo in codigos
     ]
-
-    # Crear el prompt con el contexto, threshold, métrica y datos de los códigos
     prompt_total = (
         f"{prompt_contexto}\n"
-        f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} utilizando la métrica de {metrica}. "
-        "Determina si existe algún plagio en los códigos proporcionados, y proporciona un análisis detallado de coincidencias sospechosas. "
-        "Además, a manera de resumen, muéstralo en una tabla en csv.\n\n"
-        f"Códigos para evaluar:\n{datos}"
+        f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} "
+        f"utilizando la métrica de {metrica}.\n\nCódigos para evaluar:\n{datos}"
     )
 
-    # Interactuar con la IA Gemini
+    # Interactuar con la IA y retornar el resultado
     response_text = ask_to_ia_google(prompt_total)
-    if response_text is None:
-        return jsonify({'message': 'La IA Gemini no pudo procesar la solicitud.'}), 500
 
-    # Obtener la fecha y hora actual para el nombre del archivo
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    
-    # Nombre del archivo .md basado en el dni_docente y la fecha/hora
-    filename = f"reporte_{dni_docente}_{timestamp}.md"
-    filepath = os.path.join('reports', filename)
-
-    # Guardar la respuesta de la IA en el archivo .md
-    try:
-        with open(filepath, 'w', encoding='utf-8') as file:
-            file.write(f"# Reporte de Evaluación\n\n")
-            file.write(f"**Evaluación ID**: {id_evaluacion}\n\n")
-            file.write(f"**Resultado de la IA Gemini**:\n\n{response_text}\n")
-    except Exception as e:
-        return jsonify({'message': f'Error al guardar el archivo: {str(e)}'}), 500
-
-    # Crear el mensaje para el correo
-    mensaje = (
-        f"Se ha generado un reporte de evaluación para la evaluación ID: {id_evaluacion}.\n"
-        f"Fecha del reporte: {datetime.now().strftime('%d-%m-%Y')}\n\n"
-        f"Este correo contiene el reporte generado por la IA Gemini.\n\n"
-        f"Adjunto encontrarás el archivo con el análisis del plagio."
-    )
-
-    # Enviar el correo con el archivo .md adjunto
-    smtp = SmtpSenderEmail()  # Instanciamos el sender de correo
-    email_sent = smtp.send_email(correo_docente, mensaje, filepath)
-
-    # Verificar si el correo se envió correctamente
-    if not email_sent:
-        return jsonify({'message': 'Hubo un error al enviar el correo.'}), 500
-
-    # Confirmar que el archivo se ha creado y el correo enviado
-    return jsonify({'message': f'Correo enviado exitosamente al docente: {correo_docente}. El archivo {filename} ha sido adjuntado.'}), 200
+    return jsonify({'result': response_text}), 200
