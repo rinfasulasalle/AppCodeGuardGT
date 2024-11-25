@@ -61,7 +61,10 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary" id="applyRevisionButton">Aplicar Revisión</button>
+        <button class="btn btn-primary" id="applyRevisionButton">
+          <span id="buttonText">Aplicar Revisión</span>
+          <span id="spinner" class="spinner-border spinner-border-sm text-light" style="display: none;"></span>
+        </button>        
       </div>
     </div>
   </div>
@@ -120,8 +123,13 @@
   const toggleMetricField = () => document.getElementById('metricField').classList.toggle('d-none', document.querySelector('input[name="method"]:checked').value !== 'ia_gemini');
   const submitRevision = () => {
       const applyButton = document.getElementById('applyRevisionButton');
-      applyButton.disabled = true; // Bloquea el botón
-      applyButton.textContent = "Procesando..."; // Cambia el texto del botón
+      const buttonText = document.getElementById('buttonText');
+      const spinner = document.getElementById('spinner');
+      
+      // Bloquear el botón y mostrar el spinner
+      applyButton.disabled = true;
+      buttonText.style.display = "none"; // Ocultar el texto
+      spinner.style.display = "inline-block"; // Mostrar el spinner
 
       const form = document.getElementById('revisionForm');
       const method = form.method.value;
@@ -130,8 +138,9 @@
       const email = form.email.value;
 
       if (method === 'ia_gemini' && !metric) {
-          applyButton.disabled = false; // Habilita el botón si hay error
-          applyButton.textContent = "Aplicar Revisión"; // Restaura el texto
+          applyButton.disabled = false; // Habilitar el botón si hay error
+          buttonText.style.display = "inline"; // Mostrar el texto
+          spinner.style.display = "none"; // Ocultar el spinner
           return alert('La métrica es obligatoria para IA Gemini.');
       }
 
@@ -155,11 +164,12 @@
           $('#responseModal').modal('show');
       })
       .finally(() => {
-          applyButton.disabled = false; // Habilita el botón al terminar
-          applyButton.textContent = "Aplicar Revisión"; // Restaura el texto
+          // Restaurar el botón
+          applyButton.disabled = false;
+          buttonText.style.display = "inline"; // Mostrar el texto
+          spinner.style.display = "none"; // Ocultar el spinner
       });
   };
-  
   document.getElementById('threshold').oninput = e => {document.getElementById('thresholdValue').textContent = `${e.target.value}%`;};
   document.querySelectorAll('[name="method"]').forEach(input => input.onchange = toggleMetricField);
   document.getElementById('applyRevisionButton').onclick = submitRevision;
