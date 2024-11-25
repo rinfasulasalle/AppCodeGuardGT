@@ -26,15 +26,45 @@ def get_all_evaluaciones():
     evaluaciones_list = [evaluacion.to_dict() for evaluacion in evaluaciones]
     return jsonify(evaluaciones_list), 200
 
-# Obtener una evaluación por su ID
+# Obtener una evaluación por su ID con detalles adicionales
 @evaluacion.route("/get_by_id/<int:id_evaluacion>", methods=['GET'])
 @handle_errors
 def get_by_id(id_evaluacion):
+    # Buscar la evaluación por su ID
     evaluacion = Evaluacion.query.filter_by(id_evaluacion=id_evaluacion).first()
-    if evaluacion:
-        return jsonify(evaluacion.to_dict()), 200
-    else:
+    
+    if not evaluacion:
         return jsonify({'error': 'Evaluación no encontrada'}), 404
+    
+    # Obtener información del curso relacionado
+    curso = Curso.query.filter_by(id_curso=evaluacion.id_curso).first()
+    
+    if not curso:
+        return jsonify({'error': 'Curso asociado no encontrado'}), 404
+
+    # Obtener información del docente relacionado con el curso
+    docente = Docente.query.filter_by(dni_usuario=curso.dni_docente).first()
+    if not docente:
+        return jsonify({'error': 'Docente asociado no encontrado'}), 404
+
+    # Obtener información del usuario relacionado con el docente
+    usuario = Usuario.query.filter_by(dni=docente.dni_usuario).first()
+    if not usuario:
+        return jsonify({'error': 'Usuario asociado al docente no encontrado'}), 404
+
+    # Formatear la respuesta
+    evaluacion_data = evaluacion.to_dict()
+    evaluacion_data['curso'] = {
+        'id_curso': curso.id_curso,
+        'nombre': curso.nombre
+    }
+    evaluacion_data['docente'] = {
+        'dni': usuario.dni,
+        'nombres': usuario.nombres,
+        'apellidos': usuario.apellidos
+    }
+
+    return evaluacion_data
 
 # Crear una nueva evaluación
 @evaluacion.route("/create", methods=['POST'])
@@ -235,15 +265,12 @@ def make_review_tf_idf(id_evaluacion):
     try:
         threshold = request.json.get('threshold')
 
-        # Obtener y formatear los códigos
         codigos = obtener_codigos_por_evaluacion(id_evaluacion)
         datos = formatear_datos_codigos(codigos)
 
-        # Ejecutar el análisis de plagio y guardar los resultados
         result = plagiarism_checker(datos, threshold)
-        # Aquí puedes guardar el resultado en tu sistema de persistencia si es necesario
-
-        # Retornar confirmación
+        header = get_by_id(id_evaluacion)
+        # print(header) # informacion de la evaluacion apra la cabecera
         return jsonify({'message': 'La revisión con TF-IDF se realizó correctamente.'}), 200
 
     except ValueError as e:
@@ -259,26 +286,24 @@ def make_review_ia_gemini(id_evaluacion):
         threshold, metrica = data['threshold'], data['metrica']
         prompt_contexto = "Eres un experto en bases de datos SQL para MySQL."
 
-        # Obtener y formatear los códigos
         codigos = obtener_codigos_por_evaluacion(id_evaluacion)
         datos = formatear_datos_codigos(codigos)
 
-        # Crear el prompt para la IA
         prompt_total = (
             f"{prompt_contexto}\n"
             f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} "
             f"utilizando la métrica de {metrica}.\n\nCódigos para evaluar:\n{datos}"
             f"Cuando te refieras a un código de los datos, menciona su ID y a quien le pertenece(nombres y apellidos todo junto)"
-            f"Al final a manera de resumen, plasma el análisis en una tabla y ponla en formato csv."
+            f"Al final a manera de resumen, plasma el análisis en una tabla en formato csv estricto."
         )
 
-        # Interactuar con la IA y guardar los resultados
         response_text = ask_to_ia_google(prompt_total)
-        # Aquí puedes guardar el resultado en tu sistema de persistencia si es necesario
-
         # Retornar confirmación
-        #return jsonify({'message': 'La revisión con IA Gemini se realizó correctamente.'}), 200
-        return response_text, 200
+        header = get_by_id(id_evaluacion)
+        # print(header) # informacion de la evaluacion apra la cabecera
+
+        return jsonify({'message': 'La revisión con IA Gemini se realizó correctamente.'}), 200
+        #return response_text, 200
 
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
@@ -306,7 +331,6 @@ def obtener_codigos_por_evaluacion(id_evaluacion):
         raise ValueError(f"Debe haber al menos dos códigos entregados a la evaluación. Tenemos: {len(codigos)}")
     
     return codigos
-
 
 def formatear_datos_codigos(codigos):
     """
