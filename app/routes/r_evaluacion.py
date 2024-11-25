@@ -187,6 +187,47 @@ def get_evaluaciones_by_docente(dni_docente):
 
     return jsonify(response), 200
 
+# Obtener todos los códigos asociados a una evaluación
+@evaluacion.route("/get_codigos_by_evaluacion/<int:id_evaluacion>", methods=['GET'])
+@handle_errors
+def get_codigos_by_evaluacion(id_evaluacion):
+    # Obtener los códigos asociados a la evaluación usando el id_evaluacion
+    codigos = (
+        db.session.query(
+            Codigo.id_codigo,
+            Codigo.url_codigo,
+            #Codigo.codigo_sql,
+            Usuario.dni,
+            Usuario.nombres,
+            Usuario.apellidos
+        )
+        .join(Matricula, Codigo.id_matricula == Matricula.id_matricula)
+        .join(Usuario, Matricula.dni_estudiante == Usuario.dni)
+        .filter(Codigo.id_evaluacion == id_evaluacion)
+        .all()
+    )
+
+    # Verificar si se encontraron códigos
+    if not codigos:
+        return jsonify({'message': 'No se encontraron códigos para esta evaluación'}), 404
+
+    # Formatear los datos para la respuesta
+    codigos_list = [
+        {
+            'id_codigo': codigo.id_codigo,
+            'url_codigo': codigo.url_codigo,
+            #'codigo_sql': codigo.codigo_sql,
+            'estudiante': {
+                'dni': codigo.dni,
+                'nombres': codigo.nombres,
+                'apellidos': codigo.apellidos
+            }
+        }
+        for codigo in codigos
+    ]
+
+    return jsonify(codigos_list), 200
+
 # Ruta para realizar revision con metodo tf idf
 @evaluacion.route("/make_review_tf_idf/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
@@ -237,7 +278,7 @@ def make_review_tf_idf(id_evaluacion):
     result = plagiarism_checker(datos, threshold)
 
     # Devolver el resultado como JSON
-    return jsonify(result), 200
+    return jsonify("result"), 200
 
 # Ruta para interactuar con la IA
 @evaluacion.route("/make_review_ia_gemini/<int:id_evaluacion>", methods=['POST'])
@@ -308,7 +349,7 @@ def make_review_ia_gemini(id_evaluacion):
         f"{prompt_contexto}\n"
         f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} utilizando la métrica de {metrica}. "
         "Determina si existe algún plagio en los códigos proporcionados, y proporciona un análisis detallado de coincidencias sospechosas. "
-        "Además, a manera de resumen, muéstralo en una tabla en ASCII.\n\n"
+        "Además, a manera de resumen, muéstralo en una tabla en csv.\n\n"
         f"Códigos para evaluar:\n{datos}"
     )
 

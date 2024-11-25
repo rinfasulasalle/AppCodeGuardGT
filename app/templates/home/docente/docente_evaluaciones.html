@@ -22,7 +22,7 @@
   </section>
 </div>
 
-<!-- Modal para seleccionar el método de revisión -->
+<!-- Modales -->
 <div class="modal fade" id="revisionModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -33,36 +33,35 @@
       <div class="modal-body">
         <form id="revisionForm">
           <div class="form-group">
-            <label>Método de Análisis:</label><br>
+            <label>Método de Análisis:</label>
             <div class="form-check">
-              <input type="radio" class="form-check-input" id="tfidf" name="method" value="tfidf" checked onclick="toggleMetricField()">
-              <label class="form-check-label" for="tfidf">Método TF-IDF</label>
+              <input type="radio" class="form-check-input" id="tfidf" name="method" value="tfidf" checked>
+              <label for="tfidf">Método TF-IDF</label>
             </div>
             <div class="form-check">
-              <input type="radio" class="form-check-input" id="ia_gemini" name="method" value="ia_gemini" onclick="toggleMetricField()">
-              <label class="form-check-label" for="ia_gemini">Método IA Gemini</label>
+              <input type="radio" class="form-check-input" id="ia_gemini" name="method" value="ia_gemini">
+              <label for="ia_gemini">Método IA Gemini</label>
             </div>
           </div>
-          <div class="form-group" id="metricField" style="display: none;">
-            <label for="metric">Métrica (obligatoria para IA Gemini):</label>
+          <div id="metricField" class="form-group d-none">
+            <label for="metric">Métrica:</label>
             <input type="text" id="metric" name="metric" class="form-control" placeholder="Introduce la métrica">
           </div>
           <div class="form-group">
-            <label for="threshold">Umbral de Plagio Configurable (0.00 - 1.00):</label>
-            <input type="range" id="threshold" name="threshold" class="form-control-range" min="0" max="1" step="0.01" value="0.8" oninput="updateThresholdLabel(this.value)">
+            <label for="threshold">Umbral de Plagio:</label>
+            <input type="range" id="threshold" name="threshold" class="form-control-range" min="0" max="1" step="0.01" value="0.8">
             <span id="thresholdValue">0.80</span>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="resetForm()">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="applyRevisionButton" onclick="submitRevision()">Aplicar Revisión</button>
+        <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" id="applyRevisionButton">Aplicar Revisión</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal para mostrar la respuesta de la API -->
 <div class="modal fade" id="responseModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -74,7 +73,7 @@
         <pre id="responseContent"></pre>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
@@ -88,86 +87,60 @@
 <script>
   const base_url = 'http://62.72.11.15:5000/evaluacion';
 
-  // Cargar evaluaciones
-  fetch("{{ url_for('evaluacion.get_evaluaciones_by_docente', dni_docente=current_user.dni) }}")
-    .then(res => res.json())
-    .then(data => {
-      const evaluacionesList = document.getElementById('evaluaciones-list');
-      evaluacionesList.innerHTML = data.cursos?.length ? data.cursos.map(curso => `
-        <div class="col-md-6 col-lg-4">
-          <div class="card shadow-sm">
-            <div class="card-header bg-${['primary', 'success', 'info', 'warning', 'danger'][Math.floor(Math.random() * 5)]} text-white">
-              <h5 class="card-title mb-0">${curso.curso.nombre}</h5><small>ID Curso: ${curso.curso.id_curso}</small>
+  const updateEvaluaciones = () => {
+    fetch("{{ url_for('evaluacion.get_evaluaciones_by_docente', dni_docente=current_user.dni) }}")
+      .then(res => res.json())
+      .then(data => {
+        const evaluacionesList = document.getElementById('evaluaciones-list');
+        evaluacionesList.innerHTML = data.cursos?.length ? data.cursos.map(curso => `
+          <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm">
+              <div class="card-header bg-${['primary', 'success', 'info', 'warning', 'danger'][Math.random() * 5 | 0]} text-white">
+                <h5>${curso.curso.nombre}</h5><small>ID Curso: ${curso.curso.id_curso}</small>
+              </div>
+              <div class="card-body">
+                ${curso.evaluaciones.length ? curso.evaluaciones.map(eval => `
+                  <div><strong>${eval.nombre}(ID:${eval.id_evaluacion})</strong><br>
+                    <small>${eval.descripcion}</small><br>
+                    <button class="btn btn-sm btn-primary mt-2" onclick="openModal(${eval.id_evaluacion})">Realizar Revisión</button>
+                  </div>`).join('') : '<p class="text-muted">No hay evaluaciones.</p>'}
+              </div>
             </div>
-            <div class="card-body">
-              <h6>Evaluaciones:</h6>
-              ${curso.evaluaciones.length ? curso.evaluaciones.map(eval => `
-                <div class="evaluacion-item">
-                  <strong>${eval.nombre}(ID:${eval.id_evaluacion})</strong><br>
-                  <small>${eval.descripcion}</small><br>
-                  <button class="btn btn-sm btn-primary mt-2" onclick="openRevisionModal(${eval.id_evaluacion})">Realizar Revisión</button>
-                </div>`).join('') : '<p class="text-muted">No hay evaluaciones para este curso.</p>'}
-            </div>
-          </div>
-        </div>`).join('') : '<div class="col-12"><p class="text-center">No hay cursos asociados a este docente.</p></div>';
-    })
-    .catch(() => document.getElementById('evaluaciones-list').innerHTML = '<div class="col-12"><p class="text-center text-danger">Error al cargar las evaluaciones.</p></div>');
+          </div>`).join('') : '<div class="col-12 text-center">No hay cursos asociados a este docente.</div>';
+      })
+      .catch(() => document.getElementById('evaluaciones-list').innerHTML = '<div class="col-12 text-danger text-center">Error al cargar las evaluaciones.</div>');
+  };
 
-  // Abrir modal de revisión
-  const openRevisionModal = id => $('#revisionModal').data('idEvaluacion', id).modal('show');
-
-  // Toggle de métrica para IA Gemini
-  const toggleMetricField = () => document.getElementById('metricField').style.display = document.querySelector('input[name="method"]:checked').value === 'ia_gemini' ? 'block' : 'none';
-
-  // Actualizar valor del threshold
-  const updateThresholdLabel = value => document.getElementById('thresholdValue').textContent = parseFloat(value).toFixed(2);
-
-  // Enviar revisión
+  const openModal = id => $('#revisionModal').data('id', id).modal('show');
+  const toggleMetricField = () => document.getElementById('metricField').classList.toggle('d-none', document.querySelector('input[name="method"]:checked').value !== 'ia_gemini');
   const submitRevision = () => {
-    const applyButton = document.getElementById('applyRevisionButton');
-    applyButton.disabled = true;
-    applyButton.textContent = 'Procesando...';
-
     const form = document.getElementById('revisionForm');
     const method = form.method.value;
+    const metric = form.metric.value;
     const threshold = parseFloat(form.threshold.value);
-    const metric = method === 'ia_gemini' ? form.metric.value : null;
+    if (method === 'ia_gemini' && !metric) return alert('La métrica es obligatoria para IA Gemini.');
 
-    if (method === 'ia_gemini' && !metric) {
-      alert('La métrica es obligatoria para el método IA Gemini.');
-      applyButton.disabled = false;
-      applyButton.textContent = 'Aplicar Revisión';
-      return;
-    }
-
-    const url = `${base_url}/make_review_${method === 'tfidf' ? 'tf_idf' : 'ia_gemini'}/${$('#revisionModal').data('idEvaluacion')}`;
-    const payload = method === 'tfidf' ? { threshold } : { metrica: metric, threshold };
-
+    const url = `${base_url}/make_review_${method === 'tfidf' ? 'tf_idf' : 'ia_gemini'}/${$('#revisionModal').data('id')}`;
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ threshold, ...(method === 'ia_gemini' && { metrica: metric }) })
     })
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('responseContent').textContent = JSON.stringify(data, null, 2);
-      $('#responseModal').modal('show');
-    })
-    .catch(error => {
-      document.getElementById('responseContent').textContent = 'Error al realizar la revisión.';
-      $('#responseModal').modal('show');
-    })
-    .finally(() => {
-      applyButton.disabled = false;
-      applyButton.textContent = 'Aplicar Revisión';
-    });
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('responseContent').textContent = JSON.stringify(data, null, 2);
+        $('#responseModal').modal('show');
+      })
+      .catch(() => {
+        document.getElementById('responseContent').textContent = 'Error al realizar la revisión.';
+        $('#responseModal').modal('show');
+      });
   };
 
-  // Limpiar formulario y cerrar modal
-  const resetForm = () => {
-    document.getElementById('revisionForm').reset();
-    document.getElementById('metricField').style.display = 'none';
-    document.getElementById('thresholdValue').textContent = '0.80';
-  };
+  document.getElementById('threshold').oninput = e => document.getElementById('thresholdValue').textContent = parseFloat(e.target.value).toFixed(2);
+  document.querySelectorAll('[name="method"]').forEach(input => input.onchange = toggleMetricField);
+  document.getElementById('applyRevisionButton').onclick = submitRevision;
+
+  updateEvaluaciones();
 </script>
-{% endblock %}
+{% endblock javascripts %}
