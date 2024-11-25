@@ -232,50 +232,64 @@ def get_codigos_by_evaluacion(id_evaluacion):
 @evaluacion.route("/make_review_tf_idf/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
 def make_review_tf_idf(id_evaluacion):
-    threshold = request.json.get('threshold')
+    try:
+        threshold = request.json.get('threshold')
 
-    # Obtener los códigos entregados por la evaluación
-    codigos = db.session.query(
-        Codigo.id_codigo,
-        Codigo.url_codigo,
-        Codigo.codigo_sql,
-        Usuario.dni,
-        Usuario.nombres,
-        Usuario.apellidos
-    ).join(Matricula, Codigo.id_matricula == Matricula.id_matricula) \
-     .join(Usuario, Matricula.dni_estudiante == Usuario.dni) \
-     .filter(Codigo.id_evaluacion == id_evaluacion).all()
+        # Obtener y formatear los códigos
+        codigos = obtener_codigos_por_evaluacion(id_evaluacion)
+        datos = formatear_datos_codigos(codigos)
 
-    # Preparar los datos para el análisis
-    datos = [
-        {
-            'id_codigo': codigo.id_codigo,
-            'url_codigo': codigo.url_codigo,
-            'codigo_sql': codigo.codigo_sql,
-            'estudiante': {
-                'dni': codigo.dni,
-                'nombres': codigo.nombres,
-                'apellidos': codigo.apellidos
-            }
-        }
-        for codigo in codigos
-    ]
+        # Ejecutar el análisis de plagio y guardar los resultados
+        result = plagiarism_checker(datos, threshold)
+        # Aquí puedes guardar el resultado en tu sistema de persistencia si es necesario
 
-    # Ejecutar el análisis de plagio
-    result = plagiarism_checker(datos, threshold)
+        # Retornar confirmación
+        return jsonify({'message': 'La revisión con TF-IDF se realizó correctamente.'}), 200
 
-    # Devolver el resultado
-    return jsonify({'result': result}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
 
 # Ruta para realizar revisión de códigos usando IA Gemini
 @evaluacion.route("/make_review_ia_gemini/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
 def make_review_ia_gemini(id_evaluacion):
-    data = request.json
-    threshold, metrica = data['threshold'], data['metrica']
-    prompt_contexto = "Eres un experto en bases de datos SQL para MySQL."
+    try:
+        data = request.json
+        threshold, metrica = data['threshold'], data['metrica']
+        prompt_contexto = "Eres un experto en bases de datos SQL para MySQL."
 
-    # Obtener los códigos entregados por la evaluación
+        # Obtener y formatear los códigos
+        codigos = obtener_codigos_por_evaluacion(id_evaluacion)
+        datos = formatear_datos_codigos(codigos)
+
+        # Crear el prompt para la IA
+        prompt_total = (
+            f"{prompt_contexto}\n"
+            f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} "
+            f"utilizando la métrica de {metrica}.\n\nCódigos para evaluar:\n{datos}"
+            f"Cuando te refieras a un código de los datos, menciona su ID y a quien le pertenece(nombres y apellidos todo junto)"
+            f"Al final a manera de resumen, plasma el análisis en una tabla y ponla en formato csv."
+        )
+
+        # Interactuar con la IA y guardar los resultados
+        response_text = ask_to_ia_google(prompt_total)
+        # Aquí puedes guardar el resultado en tu sistema de persistencia si es necesario
+
+        # Retornar confirmación
+        #return jsonify({'message': 'La revisión con IA Gemini se realizó correctamente.'}), 200
+        return response_text, 200
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+# ------------------------------------------------------------------------------
+## AUX
+def obtener_codigos_por_evaluacion(id_evaluacion):
+    """
+    Recupera los códigos SQL asociados a una evaluación específica.
+    Verifica que existan al menos dos códigos, de lo contrario lanza un error.
+    """
     codigos = db.session.query(
         Codigo.id_codigo,
         Codigo.url_codigo,
@@ -287,8 +301,18 @@ def make_review_ia_gemini(id_evaluacion):
      .join(Usuario, Matricula.dni_estudiante == Usuario.dni) \
      .filter(Codigo.id_evaluacion == id_evaluacion).all()
 
-    # Crear el prompt para la IA
-    datos = [
+    # Validar que haya al menos dos códigos
+    if len(codigos) < 2:
+        raise ValueError(f"Debe haber al menos dos códigos entregados a la evaluación. Tenemos: {len(codigos)}")
+    
+    return codigos
+
+
+def formatear_datos_codigos(codigos):
+    """
+    Convierte una lista de códigos obtenidos de la base de datos en un formato adecuado para el análisis.
+    """
+    return [
         {
             'id_codigo': codigo.id_codigo,
             'url_codigo': codigo.url_codigo,
@@ -301,13 +325,3 @@ def make_review_ia_gemini(id_evaluacion):
         }
         for codigo in codigos
     ]
-    prompt_total = (
-        f"{prompt_contexto}\n"
-        f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} "
-        f"utilizando la métrica de {metrica}.\n\nCódigos para evaluar:\n{datos}"
-    )
-
-    # Interactuar con la IA y retornar el resultado
-    response_text = ask_to_ia_google(prompt_total)
-
-    return jsonify({'result': response_text}), 200
