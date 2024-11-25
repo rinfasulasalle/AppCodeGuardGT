@@ -119,13 +119,19 @@
   const openModal = id => $('#revisionModal').data('id', id).modal('show');
   const toggleMetricField = () => document.getElementById('metricField').classList.toggle('d-none', document.querySelector('input[name="method"]:checked').value !== 'ia_gemini');
   const submitRevision = () => {
+      const applyButton = document.getElementById('applyRevisionButton');
+      applyButton.disabled = true; // Bloquea el botón
+      applyButton.textContent = "Procesando..."; // Cambia el texto del botón
+
       const form = document.getElementById('revisionForm');
       const method = form.method.value;
       const metric = form.metric.value;
-      const threshold = parseFloat(form.threshold.value) / 100; 
+      const threshold = parseFloat(form.threshold.value) / 100; // Convertir de porcentaje a decimal
       const email = form.email.value;
 
       if (method === 'ia_gemini' && !metric) {
+          applyButton.disabled = false; // Habilita el botón si hay error
+          applyButton.textContent = "Aplicar Revisión"; // Restaura el texto
           return alert('La métrica es obligatoria para IA Gemini.');
       }
 
@@ -147,11 +153,13 @@
       .catch(() => {
           document.getElementById('responseContent').textContent = 'Error al realizar la revisión.';
           $('#responseModal').modal('show');
+      })
+      .finally(() => {
+          applyButton.disabled = false; // Habilita el botón al terminar
+          applyButton.textContent = "Aplicar Revisión"; // Restaura el texto
       });
   };
-
-
-
+  
   document.getElementById('threshold').oninput = e => {document.getElementById('thresholdValue').textContent = `${e.target.value}%`;};
   document.querySelectorAll('[name="method"]').forEach(input => input.onchange = toggleMetricField);
   document.getElementById('applyRevisionButton').onclick = submitRevision;
