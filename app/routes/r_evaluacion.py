@@ -328,7 +328,7 @@ def obtener_codigos_por_evaluacion(id_evaluacion):
 
     # Validar que haya al menos dos códigos
     if len(codigos) < 2:
-        raise ValueError(f"Debe haber al menos dos códigos entregados a la evaluación. Tenemos: {len(codigos)}")
+        raise ValueError(f"Debe haber al menos dos códigos entregados a la evaluación. Count: {len(codigos)}")
     
     return codigos
 

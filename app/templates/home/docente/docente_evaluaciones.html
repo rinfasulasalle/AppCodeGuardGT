@@ -6,6 +6,17 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    #responseIcon {
+      font-size: 5rem;
+    }
+    #responseMessage {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+  </style>
+  
 {% endblock stylesheets %}
 
 {% block content %}
@@ -73,12 +84,10 @@
 <div class="modal fade" id="responseModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Resultado de la Revisión</h5>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <pre id="responseContent"></pre>
+      <div class="modal-body text-center">
+        <!-- Contenedor para el icono y mensaje dinámico -->
+        <div id="responseIcon" class="my-4"></div>
+        <h4 id="responseMessage"></h4>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
@@ -86,6 +95,7 @@
     </div>
   </div>
 </div>
+
 {% endblock content %}
 
 {% block javascripts %}
@@ -128,19 +138,19 @@
       
       // Bloquear el botón y mostrar el spinner
       applyButton.disabled = true;
-      buttonText.style.display = "none"; // Ocultar el texto
-      spinner.style.display = "inline-block"; // Mostrar el spinner
+      buttonText.style.display = "none";
+      spinner.style.display = "inline-block";
 
       const form = document.getElementById('revisionForm');
       const method = form.method.value;
       const metric = form.metric.value;
-      const threshold = parseFloat(form.threshold.value) / 100; // Convertir de porcentaje a decimal
+      const threshold = parseFloat(form.threshold.value) / 100;
       const email = form.email.value;
 
       if (method === 'ia_gemini' && !metric) {
-          applyButton.disabled = false; // Habilitar el botón si hay error
-          buttonText.style.display = "inline"; // Mostrar el texto
-          spinner.style.display = "none"; // Ocultar el spinner
+          applyButton.disabled = false;
+          buttonText.style.display = "inline";
+          spinner.style.display = "none";
           return alert('La métrica es obligatoria para IA Gemini.');
       }
 
@@ -156,20 +166,40 @@
       })
       .then(res => res.json())
       .then(data => {
-          document.getElementById('responseContent').textContent = JSON.stringify(data, null, 2);
+          const responseIcon = document.getElementById('responseIcon');
+          const responseMessage = document.getElementById('responseMessage');
+          
+          // Mostrar ícono y mensaje basados en la respuesta
+          if (data.message) {
+              responseIcon.innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+              responseMessage.textContent = data.message;
+          } else if (data.error) {
+              responseIcon.innerHTML = '<i class="fas fa-times-circle text-danger"></i>';
+              responseMessage.textContent = data.error;
+          } else {
+              responseIcon.innerHTML = '<i class="fas fa-exclamation-circle text-warning"></i>';
+              responseMessage.textContent = 'Respuesta desconocida del servidor.';
+          }
+
+          // Mostrar el modal de respuesta
           $('#responseModal').modal('show');
       })
       .catch(() => {
-          document.getElementById('responseContent').textContent = 'Error al realizar la revisión.';
+          const responseIcon = document.getElementById('responseIcon');
+          const responseMessage = document.getElementById('responseMessage');
+          
+          responseIcon.innerHTML = '<i class="fas fa-times-circle text-danger"></i>';
+          responseMessage.textContent = 'Error al comunicarse con el servidor.';
           $('#responseModal').modal('show');
       })
       .finally(() => {
           // Restaurar el botón
           applyButton.disabled = false;
-          buttonText.style.display = "inline"; // Mostrar el texto
-          spinner.style.display = "none"; // Ocultar el spinner
+          buttonText.style.display = "inline";
+          spinner.style.display = "none";
       });
   };
+
   document.getElementById('threshold').oninput = e => {document.getElementById('thresholdValue').textContent = `${e.target.value}%`;};
   document.querySelectorAll('[name="method"]').forEach(input => input.onchange = toggleMetricField);
   document.getElementById('applyRevisionButton').onclick = submitRevision;
