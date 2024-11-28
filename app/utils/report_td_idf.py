@@ -7,27 +7,27 @@ from datetime import datetime
 
 def format_plagiarism_cases(plagiarism_cases):
     """Format plagiarism cases into a table."""
-    data = [["ID Código A", "DNI Estudiante A", "ID Código B", "DNI Estudiante B", "Score"]]
+    data = [["ID Código A", "DNI Estudiante A", "ID Código B", "DNI Estudiante B", "Score %"]]
     for case in plagiarism_cases:
         data.append([
             case["codigo_a"]["id_codigo"],
             case["codigo_a"]["estudiante"]["dni"],
             case["codigo_b"]["id_codigo"],
             case["codigo_b"]["estudiante"]["dni"],
-            case["similarity_score"]
+            case["similarity_score"]*100
         ])
     return data
 
 def format_comparisons(comparisons):
     """Format comparisons into a table."""
-    data = [["ID Código A", "DNI Estudiante A", "ID Código B", "DNI Estudiante B", "Score"]]
+    data = [["ID Código A", "DNI Estudiante A", "ID Código B", "DNI Estudiante B", "Score %"]]
     for comparison in comparisons:
         data.append([
             comparison["codigo_a"]["id_codigo"],
             comparison["codigo_a"]["estudiante"]["dni"],
             comparison["codigo_b"]["id_codigo"],
             comparison["codigo_b"]["estudiante"]["dni"],
-            comparison["similarity_score"]
+            comparison["similarity_score"]*100
         ])
     return data
 
