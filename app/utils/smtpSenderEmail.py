@@ -23,7 +23,7 @@ class SmtpSenderEmail:
         email = EmailMessage()
         email['From'] = self.remitente
         email['To'] = destinatario
-        email['Subject'] = 'REPORTE DE PLAGIO GENERADO CON IA GEMINI'
+        email['Subject'] = 'REPORTE DE PLAGIO'
         email.set_content(mensaje)
 
         # Adjuntar el archivo

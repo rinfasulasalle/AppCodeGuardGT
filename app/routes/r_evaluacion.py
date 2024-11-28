@@ -12,6 +12,7 @@ from utils.error_handler import handle_errors
 from utils.plagiarism_checker_tf_idf import plagiarism_checker
 from utils.google_ai import GoogleGenerativeAI, ask_to_ia_google
 from utils.smtpSenderEmail import SmtpSenderEmail
+from utils.report_td_idf import generate_pdf
 
 evaluacion = Blueprint('evaluacion', __name__)
 
@@ -263,15 +264,40 @@ def get_codigos_by_evaluacion(id_evaluacion):
 @handle_errors
 def make_review_tf_idf(id_evaluacion):
     try:
+        # Obtener el umbral y el correo del cuerpo de la solicitud
         threshold = request.json.get('threshold')
+        email = request.json.get('email')
 
+        # Obtener los códigos y formatear los datos
         codigos = obtener_codigos_por_evaluacion(id_evaluacion)
         datos = formatear_datos_codigos(codigos)
 
+        # Realizar la revisión de plagio
         result = plagiarism_checker(datos, threshold)
+
+        # Obtener los datos de la evaluación
         header = get_by_id(id_evaluacion)
-        # print(header) # informacion de la evaluacion apra la cabecera
-        return jsonify({'message': 'La revisión con TF-IDF se realizó correctamente.'}), 200
+
+        # Generar el PDF con los resultados
+        pdf_path = generate_pdf(header, result, "TF-IDF")
+
+        # Configurar el mensaje del correo
+        mensaje = (
+            f"Estimado/a,\n\n"
+            f"Adjunto encontrará el reporte de la evaluación realizada con el método TF-IDF.\n\n"
+            f"Detalles de la evaluación:\n"
+            f"- Curso: {header['curso']['nombre']}\n"
+            f"- Evaluación: {header['nombre']}\n"
+            f"- Umbral: {threshold}\n\n"
+            f"Saludos,\nCodeGuard"
+        )
+
+        # Enviar el correo con el PDF adjunto
+        smtp_sender = SmtpSenderEmail()
+        smtp_sender.send_email(email, mensaje, pdf_path)
+
+        # Responder indicando éxito
+        return jsonify({'message': 'La revisión de códigos SQL utilizando el método TF-IDF se completó con éxito.\nEl reporte ha sido generado en formato PDF y enviado correctamente al correo asociado.'}), 200
 
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
@@ -284,6 +310,8 @@ def make_review_ia_gemini(id_evaluacion):
     try:
         data = request.json
         threshold, metrica = data['threshold'], data['metrica']
+        email = request.json.get('email')
+        #print(f"Correo recibido para el reporte: {email}")
         prompt_contexto = "Eres un experto en bases de datos SQL para MySQL."
 
         codigos = obtener_codigos_por_evaluacion(id_evaluacion)
@@ -302,8 +330,7 @@ def make_review_ia_gemini(id_evaluacion):
         header = get_by_id(id_evaluacion)
         # print(header) # informacion de la evaluacion apra la cabecera
 
-        return jsonify({'message': 'La revisión con IA Gemini se realizó correctamente.'}), 200
-        #return response_text, 200
+        return jsonify({'message': 'La revisión de códigos SQL utilizando IA Gemini se realizó exitosamente. El reporte detallado ha sido generado en formato PDF y enviado satisfactoriamente al correo proporcionado.'}), 200
 
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
