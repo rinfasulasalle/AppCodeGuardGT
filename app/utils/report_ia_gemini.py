@@ -2,6 +2,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus.flowables import PageBreak
 import markdown
 import os
 from datetime import datetime
@@ -32,7 +33,7 @@ def extract_csv_table_from_markdown(markdown_text):
 
 def generate_pdf(header, content, method, metrica, output_folder="reports/"):
     """
-    Generate a PDF report with evaluation and review content.
+    Genera un reporte en PDF con la información de evaluación.
     """
     os.makedirs(output_folder, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -43,7 +44,7 @@ def generate_pdf(header, content, method, metrica, output_folder="reports/"):
         styles = getSampleStyleSheet()
         elements = []
 
-        # Header: Evaluation details
+        # Agregar encabezado
         header_data = [
             ["Curso:", header['curso']['nombre']],
             ["Docente DNI:", header['docente']['dni']],
@@ -52,7 +53,6 @@ def generate_pdf(header, content, method, metrica, output_folder="reports/"):
             ["Método:", method],
             ["Métrica:", metrica]
         ]
-
         table = Table(header_data, colWidths=[120, 380])
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
@@ -66,19 +66,18 @@ def generate_pdf(header, content, method, metrica, output_folder="reports/"):
         elements.append(table)
         elements.append(Spacer(1, 20))
 
-        # IA Gemini Response Section
+        # Agregar contenido del análisis
         elements.append(Paragraph("Revisión de IA Gemini", styles['Heading2']))
         elements.append(Spacer(1, 10))
 
         if content:
-            html_content = markdown.markdown(content)
-            elements.append(Paragraph(html_content, styles['BodyText']))
+            elements.append(Paragraph(markdown.markdown(content), styles['BodyText']))
         else:
             elements.append(Paragraph("No se pudo obtener contenido de la revisión de IA Gemini.", styles['BodyText']))
 
         elements.append(Spacer(1, 20))
 
-        # Extracted CSV Table
+        # Extraer tabla CSV
         csv_table = extract_csv_table_from_markdown(content)
         if csv_table:
             table = Table(csv_table, colWidths=[80] * len(csv_table[0]))
@@ -94,9 +93,7 @@ def generate_pdf(header, content, method, metrica, output_folder="reports/"):
         else:
             elements.append(Paragraph("No se detectaron tablas CSV en el contenido.", styles['BodyText']))
 
-        elements.append(Spacer(1, 50))
-
-        # Footer
+        # Pie de página
         def footer(canvas, doc):
             canvas.saveState()
             canvas.setFont('Helvetica', 9)
@@ -105,7 +102,10 @@ def generate_pdf(header, content, method, metrica, output_folder="reports/"):
             canvas.restoreState()
 
         doc.build(elements, onFirstPage=footer, onLaterPages=footer)
+
+        # Retornar la ruta del archivo generado
         return output_file
+
     except Exception as e:
-        print(f"Error generating PDF: {e}")
+        print(f"Error generando PDF: {e}")
         return None

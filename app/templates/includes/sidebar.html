@@ -126,6 +126,14 @@
             </a>
           </li>
         </ul>
+        <ul class="nav nav-treeview">
+          <li class="nav-item">
+            <a href="{{ url_for('home.docente_clasroom') }}" class="nav-link {% if 'evaluaciones' in segment %} active {% endif %}">
+              <i class="far fa-circle nav-icon"></i>
+              <p>API CLASROOM</p>
+            </a>
+          </li>
+        </ul>
       </li>
       {% elif current_user.role == 'Estudiante' %}
       <li class="nav-item has-treeview {% if 'mis-cursos' in segment %} menu-open {% endif %}">

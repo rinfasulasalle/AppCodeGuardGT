@@ -303,7 +303,6 @@ def make_review_tf_idf(id_evaluacion):
         return jsonify({'error': str(e)}), 400
 
 
-# Ruta para realizar revisión de códigos usando IA Gemini
 @evaluacion.route("/make_review_ia_gemini/<int:id_evaluacion>", methods=['POST'])
 @handle_errors
 def make_review_ia_gemini(id_evaluacion):
@@ -311,29 +310,45 @@ def make_review_ia_gemini(id_evaluacion):
         data = request.json
         threshold, metrica = data['threshold'], data['metrica']
         email = request.json.get('email')
-        #print(f"Correo recibido para el reporte: {email}")
-        prompt_contexto = "Eres un experto en bases de datos SQL para MySQL."
 
+        # Crear el contexto y preparar los datos
+        prompt_contexto = "Eres un experto en bases de datos SQL para MySQL."
         codigos = obtener_codigos_por_evaluacion(id_evaluacion)
         datos = formatear_datos_codigos(codigos)
 
+        # Generar el prompt para IA Gemini
         prompt_total = (
             f"{prompt_contexto}\n"
             f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} "
             f"utilizando la métrica de {metrica}.\n\nCódigos para evaluar:\n{datos}"
-            f"Cuando te refieras a un código de los datos, menciona su ID y a quien le pertenece(nombres y apellidos todo junto)"
-            f"Al final a manera de resumen, plasma el análisis en una tabla en formato csv estricto."
+            f"Cuando te refieras a un código de los datos, menciona su ID y a quien le pertenece(nombres y apellidos todo junto). "
+            f"Al final, a manera de resumen, plasma el análisis en una tabla en formato CSV estricto."
         )
 
+        # Obtener la respuesta de IA Gemini
         response_text = ask_to_ia_google(prompt_total)
-        # Retornar confirmación
-        header = get_by_id(id_evaluacion)
-        # print(header) # informacion de la evaluacion apra la cabecera
 
-        return jsonify({'message': 'La revisión de códigos SQL utilizando IA Gemini se realizó exitosamente. El reporte detallado ha sido generado en formato PDF y enviado satisfactoriamente al correo proporcionado.'}), 200
+        # Generar un nombre único para el archivo .md
+        os.makedirs("reports_ia", exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        md_file_path = os.path.join("reports_ia", f"IA_Gemini_Report_{timestamp}.md")
+
+        # Guardar el contenido en el archivo .md
+        with open(md_file_path, "w", encoding="utf-8") as md_file:
+            md_file.write(response_text)
+
+        # Retornar confirmación
+        return jsonify({
+            'message': 'La revisión de códigos SQL utilizando IA Gemini se realizó exitosamente. '
+                       'El reporte detallado ha sido guardado en formato .md con éxito.',
+            'file_path': md_file_path
+        }), 200
 
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
+
+    except Exception as e:
+        return jsonify({'error': f"Error inesperado: {str(e)}"}), 500
 
 # ------------------------------------------------------------------------------
 ## AUX
