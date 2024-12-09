@@ -308,8 +308,11 @@ def make_review_tf_idf(id_evaluacion):
 def make_review_ia_gemini(id_evaluacion):
     try:
         data = request.json
-        threshold, metrica = data['threshold'], data['metrica']
-        email = request.json.get('email')
+        threshold, metrica = data.get('threshold'), data.get('metrica')
+        email = data.get('email')
+
+        if not all([threshold, metrica, email]):
+            return jsonify({'error': 'Faltan datos necesarios: threshold, metrica, o email'}), 400
 
         # Crear el contexto y preparar los datos
         prompt_contexto = "Eres un experto en bases de datos SQL para MySQL."
@@ -320,9 +323,9 @@ def make_review_ia_gemini(id_evaluacion):
         prompt_total = (
             f"{prompt_contexto}\n"
             f"Evalúa los siguientes códigos SQL con un umbral de similitud de {threshold} "
-            f"utilizando la métrica de {metrica}.\n\nCódigos para evaluar:\n{datos}"
-            f"Cuando te refieras a un código de los datos, menciona su ID y a quien le pertenece(nombres y apellidos todo junto). "
-            f"Al final, a manera de resumen, plasma el análisis en una tabla en formato CSV estricto."
+            f"utilizando la métrica de {metrica}.\n\nCódigos para evaluar:\n{datos}\n\n"
+            f"Cuando te refieras a un código de los datos, menciona su ID y a quien le pertenece (nombres y apellidos todo junto). "
+            f"Al final, a manera de resumen, plasma el análisis en una tabla en formato md estricto."
         )
 
         # Obtener la respuesta de IA Gemini
@@ -337,10 +340,24 @@ def make_review_ia_gemini(id_evaluacion):
         with open(md_file_path, "w", encoding="utf-8") as md_file:
             md_file.write(response_text)
 
+        # Configurar el mensaje del correo
+        mensaje = (
+            f"Estimado/a,\n\n"
+            f"Adjunto encontrará el reporte generado para la evaluación utilizando IA Gemini.\n\n"
+            f"Detalles de la evaluación:\n"
+            f"- Umbral: {threshold}\n"
+            f"- Métrica: {metrica}\n\n"
+            f"Saludos,\nCodeGuard"
+        )
+
+        # Enviar el correo con el archivo adjunto
+        smtp_sender = SmtpSenderEmail()
+        smtp_sender.send_email(email, mensaje, md_file_path)
+
         # Retornar confirmación
         return jsonify({
             'message': 'La revisión de códigos SQL utilizando IA Gemini se realizó exitosamente. '
-                       'El reporte detallado ha sido guardado en formato .md con éxito.',
+                       'El reporte ha sido guardado y enviado correctamente por correo.',
             'file_path': md_file_path
         }), 200
 
